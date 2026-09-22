@@ -553,7 +553,7 @@
     .seg-opt {
       padding: 6px 14px;
       border-radius: calc(var(--radius-md) - 3px);
-      font-size: 12.5px;
+      font-size: 11.5px;
       font-weight: 500;
       cursor: pointer;
       color: var(--muted-foreground);
@@ -1646,9 +1646,18 @@
       gap: 16px;
     }
 
-    /* Dispatch / Store forms: first field full width, QTY + Date on one row. */
-    .dispatch-form-grid > .field:first-child {
-      grid-column: 1 / -1;
+    /* Store dispatch form: Customer + Sub Customer on row 1,
+       QTY + Date on row 2. */
+    .dispatch-form-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    .dispatch-subcustomer-disabled {
+      opacity: .65;
+      pointer-events: none;
+    }
+    .dispatch-subcustomer-disabled .select-trigger {
+      cursor: not-allowed;
+      background: var(--muted);
     }
 
     .final-item-basic-grid {
@@ -1699,25 +1708,15 @@
       display: contents;
     }
 
-    /* Packaging: Item Name and PCS Qty should each take exactly 50% width. */
-    .final-item-detail-grid:has(.packaging-metrics) {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .final-item-detail-grid:has(.packaging-metrics) > .field:first-child,
-    .final-item-detail-grid > .packaging-metrics > .field {
-      grid-column: span 1;
+    /* Item metrics: Item Name + quantity/stock thresholds stay on one row. */
+    .final-item-detail-grid {
+      grid-template-columns: minmax(0, 2fr) repeat(4, minmax(0, 1fr));
     }
 
     @media (max-width: 760px) {
       .final-item-basic-grid,
       .final-item-detail-grid {
         grid-template-columns: 1fr 1fr;
-      }
-
-      .final-item-detail-grid:has(.packaging-metrics) > .field:first-child,
-      .final-item-detail-grid > .packaging-metrics > .field {
-        grid-column: span 1;
       }
     }
 
@@ -1908,6 +1907,36 @@
       display: block;
       color: #725d3a;
       font-size: 12px;
+    }
+
+    .toast.reorder-stock {
+      border-color: rgba(202, 133, 34, .38);
+      background: #fffaf0;
+      box-shadow: 0 14px 36px rgba(202, 133, 34, .18);
+    }
+
+    .toast.reorder-stock svg {
+      color: var(--caution);
+    }
+
+    .toast.max-stock {
+      border-color: rgba(58, 118, 172, .30);
+      background: #f4f8fc;
+      box-shadow: 0 14px 36px rgba(58, 118, 172, .12);
+    }
+
+    .toast.max-stock svg {
+      color: var(--flask);
+    }
+
+    .toast.stock-blocked {
+      border-color: rgba(208, 61, 55, .34);
+      background: #fff5f4;
+      box-shadow: 0 14px 36px rgba(208, 61, 55, .14);
+    }
+
+    .toast.stock-blocked svg {
+      color: var(--reject);
     }
 
     .confirm-grid {
@@ -3023,6 +3052,13 @@
     .stock-filter-bar .input { height:38px; }
     .stock-filter-bar .search-box input { padding-left:34px; }
     @media (max-width:700px) { .stock-filter-bar { align-items:stretch; } .stock-filter-search, .stock-filter-field, .stock-filter-clear { width:100%; } }
+  </style>
+<style>
+    .dispatch-table { width: 100% !important; }
+    .dispatch-table .action-col {
+      width: 108px !important;
+      text-align: right !important;
+    }
   </style>
 </head>
 
@@ -4274,30 +4310,55 @@
         padding-top: 7px
       }
 
-      .final-inw-metric-grid,
-      .final-inw-pcs-grid {
+      .final-inw-chemical-grid,
+      .final-inw-packaging-grid {
         display: grid;
         align-items: end;
         gap: 12px;
         width: 100%;
       }
 
-      .final-inw-metric-grid {
-        grid-template-columns: minmax(260px, 2fr) repeat(2, minmax(130px, 1fr));
+      /* Chemical inward uses KG QTY only. */
+      /* Chemical + Packaging inward use Item + Packed Size + NOS + Total. */
+      .final-inw-chemical-grid,
+      .final-inw-packaging-grid {
+        grid-template-columns: minmax(240px, 1.7fr) minmax(110px, 1fr) 24px minmax(90px, 1fr) 24px minmax(110px, 1fr);
+        align-items: end;
       }
 
-      .final-inw-pcs-grid {
-        grid-template-columns: minmax(260px, 2fr) minmax(150px, 1fr);
-      }
-
-      .final-inw-metric-grid .field,
-      .final-inw-pcs-grid .field {
-        min-width: 0;
+      .final-inw-calc-operator {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 38px;
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--muted-foreground);
+        user-select: none;
       }
 
       @media (max-width: 760px) {
-        .final-inw-metric-grid,
-        .final-inw-pcs-grid {
+        .final-inw-chemical-grid,
+        .final-inw-packaging-grid {
+          grid-template-columns: minmax(180px, 1.4fr) minmax(90px, 1fr) 22px minmax(80px, 1fr) 22px minmax(90px, 1fr);
+        }
+      }
+
+      .final-inw-chemical-grid .field,
+      .final-inw-packaging-grid .field {
+        min-width: 0;
+      }
+
+      .final-inw-total-input {
+        background: #f4fbf6 !important;
+        border-color: rgba(52, 140, 90, .35) !important;
+        color: #237043 !important;
+        font-weight: 700 !important;
+      }
+
+      @media (max-width: 760px) {
+        .final-inw-chemical-grid,
+        .final-inw-packaging-grid {
           grid-template-columns: 1fr;
         }
       }
@@ -4596,7 +4657,7 @@
         { id: 3, itemCode: 'RM-003', itemName: 'Sodium Hypochlorite', itemCategoryId: 1, baseUnit: 'LTR', gravity: 1.1, hsnCode: '2828', gstPercent: 18 },
         { id: 4, itemCode: 'RM-004', itemName: 'Hydrochloric Acid', itemCategoryId: 1, baseUnit: 'LTR', gravity: 1.18, hsnCode: '2806', gstPercent: 18 },
         { id: 5, itemCode: 'RM-005', itemName: 'Sodium Hydroxide Flakes', itemCategoryId: 1, baseUnit: 'KG', gravity: 1.0, hsnCode: '2815', gstPercent: 18 },
-        { id: 6, itemCode: 'FG-001', itemName: 'ChemX Base Solution', itemCategoryId: 3, baseUnit: 'LTR', gravity: 1.05, hsnCode: '3824', gstPercent: 18 },
+        { id: 6, itemCode: 'FG-001', itemName: 'ChemX Base Solution', itemCategoryId: 3, baseUnit: 'KG', gravity: 1.05, hsnCode: '3824', gstPercent: 18 },
         { id: 7, itemCode: 'FG-002', itemName: 'ChemX Industrial Cleaner', itemCategoryId: 3, baseUnit: 'LTR', gravity: 1.02, hsnCode: '3402', gstPercent: 18 },
         { id: 8, itemCode: 'SF-002', itemName: 'Bulk Detergent Mix', itemCategoryId: 2, baseUnit: 'KG', gravity: 1.0, hsnCode: '3402', gstPercent: 18 },
         { id: 9, itemCode: 'PK-001', itemName: '5L HDPE Container', itemCategoryId: 4, baseUnit: 'PCS', gravity: 1, hsnCode: '3923', gstPercent: 18 },
@@ -4625,7 +4686,7 @@
 
       templates: [
         {
-          id: 1, templateType: 'Production', itemId: 6, itemName: 'ChemX Base Solution', outputQty: 100, outputUnit: 'LTR', lines: [
+          id: 1, templateType: 'Production', itemId: 6, itemName: 'ChemX Base Solution', outputQty: 100, outputUnit: 'KG', lines: [
             { itemId: 1, baseUnit: 'KG', qty: 40 }, { itemId: 3, baseUnit: 'LTR', qty: 60 }
           ]
         },
@@ -4715,7 +4776,7 @@
       el.className = 'toast ' + type;
       const icon = type === 'success'
         ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5"/></svg>'
-        : type === 'low-stock'
+        : ['low-stock', 'reorder-stock', 'max-stock', 'stock-blocked'].includes(type)
           ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg>'
           : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/></svg>';
       el.innerHTML = icon + '<span>' + message + '</span>';
@@ -5902,6 +5963,7 @@
       closeModal('modal-store-start');
       renderStoreTable();
       toast('Received into stock');
+      setTimeout(() => { if (typeof window.checkStockThresholdAlerts === 'function') window.checkStockThresholdAlerts(); }, 80);
     }
     PAGE_INIT['store'] = function () { renderStoreTable(); };
 
@@ -5916,7 +5978,7 @@
     </div>
     <div class="card">
       <div class="card-head"><h2>Recent dispatches</h2><p>Finished goods shipped out to customers</p></div>
-      <div class="tbl-wrap"><table class="dt"><thead><tr><th>Dispatch no.</th><th>Customer</th><th>Item</th><th>Qty</th><th>Date</th><th>Status</th></tr></thead><tbody>
+      <div class="tbl-wrap"><table class="dt"><thead><tr><th>Dispatch no.</th><th>Customer</th><th>Sub Customer</th><th>Item</th><th>Qty</th><th>Date</th><th>Status</th></tr></thead><tbody>
         <tr><td class="cell-strong">DSP-014</td><td>${DB.customers[0].name}</td><td>ChemX Base Solution</td><td class="num">50 LTR</td><td class="cell-sub">${fmtDate('2026-09-14')}</td><td>${statusBadge('Completed')}</td></tr>
         <tr><td class="cell-strong">DSP-013</td><td>${DB.customers[1].name}</td><td>5L HDPE Container</td><td class="num">200 PCS</td><td class="cell-sub">${fmtDate('2026-09-12')}</td><td>${statusBadge('Completed')}</td></tr>
       </tbody></table></div>
@@ -6491,7 +6553,7 @@
       };
       window.onInwItemChange = function (value, comboId) { const key = comboId.replace('inw-item-', ''), line = inwLines.find(l => l.key === key); if (!line) return; line.itemId = value; line.unit = unitForItem(value) || 'KG'; const it = DB.items.find(i => i.id == value); line.gravity = it?.gravity || ''; line.kgQty = it?.kgQty || ''; line.ltrQty = it?.ltrQty || ''; line.qty = it?.qty || ''; renderInwLines(); };
       window.onInwUnitChange = function (value, comboId) { const key = comboId.replace('inw-unit-', ''), line = inwLines.find(l => l.key === key); if (!line) return; line.unit = value; renderInwLines(); };
-      window.openInwardModal = function () { document.getElementById('inw-no').value = 'INW-' + Math.floor(100 + Math.random() * 800); document.getElementById('inw-date').value = todayIso(); document.getElementById('inw-vendor-wrap').innerHTML = comboHtml('inw-vendor', 'Select vendor', DB.vendors.map(v => ({ value: v.id, label: v.name, sub: v.code })), null, ''); inwLines = [freshInwardLine()]; renderInwLines(); openModal('modal-inward'); };
+      window.openInwardModal = function () { document.getElementById('inw-no').value = 'INW-' + Math.floor(100 + Math.random() * 800); document.getElementById('inw-date').value = todayIso(); document.getElementById('inw-vendor-wrap').innerHTML = comboHtml('inw-vendor', 'Select vendor', DB.vendors.map(v => ({ value: v.id, label: v.name })), null, ''); inwLines = [freshInwardLine()]; renderInwLines(); openModal('modal-inward'); };
       window.submitInward = function (sendToQc) { const docNo = document.getElementById('inw-no').value.trim(), docDate = document.getElementById('inw-date').value, vendorId = comboGetValue('inw-vendor'); const valid = inwLines.filter(l => l.itemId && Number(l.qty) > 0); if (!docNo || !vendorId || !valid.length) { toast('Fill inward no., vendor and one valid item', 'error'); return; } DB.inwards.unshift({ id: DB.nextInwardId++, docNo, docDate, vendorId: Number(vendorId), currentDept: 'QC_LAB', status: 'Pending', items: valid.map(l => { const it = DB.items.find(i => i.id == l.itemId); return { itemId: Number(l.itemId), itemName: it.itemName, itemCode: it.itemCode, qty: Number(l.qty), unit: l.unit || it.baseUnit, gravity: Number(l.gravity || it.gravity || 0), baseUnit: it.baseUnit, kgQty: Number(l.kgQty || 0), ltrQty: Number(l.ltrQty || 0) } }) }); closeModal('modal-inward'); renderRmiTable(); toast(sendToQc ? 'Inward saved and sent to QC Lab' : 'Inward saved'); };
       PAGE_RENDERERS['raw-material-inward'] = function () { return `<div class="page-head"><div><div class="page-title">Raw Material Inward</div>${breadcrumb('Raw Material Inward')}</div><button class="btn btn-primary" onclick="openInwardModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg> New inward</button></div><div class="card"><div class="toolbar"><div class="toolbar-left"><div class="search-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input class="input" placeholder="Search by inward no. or item…" oninput="rmiSearch=this.value;TABLE_PAGES.rmi=1;renderRmiTable();"/></div></div></div><div class="tbl-wrap" id="rmi-table-wrap"></div><div class="pager" id="rmi-pager"></div></div><div class="modal-overlay" id="modal-inward"><div class="modal modal-lg"><div class="modal-head"><h3>New raw material inward</h3><p>Record one raw material inward entry and send it for QC.</p></div><div class="modal-body"><div class="form-grid"><div class="field"><label class="field-label">Inward no.</label><input class="input" id="inw-no"/></div><div class="field"><label class="field-label">Inward date</label><input class="input" type="date" id="inw-date"/></div><div class="field span-2"><label class="field-label">Vendor</label><div id="inw-vendor-wrap"></div></div></div><div class="divider"></div><label class="field-label">Item</label><div id="inw-lines"></div></div><div class="modal-foot"><button class="btn btn-outline btn-cancel" onclick="closeModal('modal-inward')">Cancel</button><button class="btn btn-save-green" onclick="submitInward(false)">Save inward</button><button class="btn btn-send-blue" onclick="submitInward(true)">Save &amp; send to QC</button></div></div></div>` };
       window.renderRmiTable = function () { const wrap = document.getElementById('rmi-table-wrap'), pager = document.getElementById('rmi-pager'); if (!wrap) return; let rows = DB.inwards.slice().sort((a, b) => b.id - a.id); const q = rmiSearch.trim().toLowerCase(); if (q) rows = rows.filter(r => String(r.docNo).toLowerCase().includes(q) || r.items.some(it => String(it.itemName).toLowerCase().includes(q))); const pageRows = paginateRows(rows, 'rmi'); wrap.innerHTML = rows.length ? `<table class="dt"><thead><tr><th>Inward No.</th><th>Inward Date</th><th>Vendor</th><th>Item</th><th>Qty</th><th>Status</th><th style="text-align:right">Actions</th></tr></thead><tbody>${pageRows.map(r => { const it = r.items[0] || {}; return `<tr><td class="cell-strong">${r.docNo}</td><td>${fmtDate(r.docDate)}</td><td class="cell-strong">${vendorLabel(r.vendorId)}</td><td>${it.itemCode ? it.itemCode + ' — ' : ''}${it.itemName || '—'}</td><td class="num">${it.qty ?? 0} ${it.unit || ''}</td><td>${statusBadge(r.status)}</td><td class="row-actions">${r.status === 'Pending' ? iconAction(ICON_TAKE, 'Take', 'advanceInward(' + r.id + ')', 'take') : ''}</td></tr>` }).join('')}</tbody></table>` : emptyState('No inward entries found', 'Record a raw material inward to send it for QC.'); if (pager) pager.innerHTML = pagerHtml(rows.length, 'rmi', 'renderRmiTable'); };
@@ -6527,10 +6589,10 @@
       window.renderProdTable = function () { const wrap = document.getElementById('prod-table-wrap'), pager = document.getElementById('prod-pager'); if (!wrap) return; let rows = DB.stages.filter(s => s.kind === 'PRODUCTION').slice().sort((a, b) => b.id - a.id); const q = prodSearch.trim().toLowerCase(); if (q) rows = rows.filter(r => String(r.batchNo).toLowerCase().includes(q) || r.items.some(it => itemLabel(it.itemId).toLowerCase().includes(q))); const pageRows = paginateRows(rows, 'prod'); wrap.innerHTML = rows.length ? `<table class="dt"><thead><tr><th>Batch No.</th><th>Finished Good</th><th>Batch QTY</th><th>Status</th><th>Batch Date</th><th style="text-align:right">Actions</th></tr></thead><tbody>${pageRows.map(s => { const fg = DB.items.find(i => i.id === s.finishedGoodId); const batchQty = s.mainQty ?? s.items.reduce((a, it) => a + Number(it.qty || 0), 0); const action = s.currentDept === 'PRODUCTION' ? (s.status === 'Pending' ? iconAction(ICON_PLAY, 'Start production', 'openProdStart(' + s.id + ')', 'take') : s.status === 'InProcess' ? iconAction(ICON_CHECK, 'Complete production', 'openProdClose(' + s.id + ')', 'approve') : '') : ''; return `<tr><td class="cell-strong">${s.batchNo}</td><td>${fg ? fg.itemCode + ' — ' + fg.itemName : '—'}</td><td class="num">${Number(batchQty).toLocaleString('en-IN')} ${fg?.baseUnit || ''}</td><td>${statusBadge(s.status)}</td><td>${fmtDate(s.batchDate)}</td><td class="row-actions">${action}</td></tr>` }).join('')}</tbody></table>` : emptyState('No production entries found', 'Create a new production batch to get started.'); if (pager) pager.innerHTML = pagerHtml(rows.length, 'prod', 'renderProdTable'); };
 
       /* QC */
-      PAGE_RENDERERS.qc = function () { const role = DB.currentUser.role, visible = role === 'QC Manager' ? ['QC_MANAGER'] : role === 'QC Lab' ? ['QC_LAB'] : ['QC_LAB', 'QC_MANAGER']; if (!visible.includes(qcStageTab)) qcStageTab = visible[0]; return `<div class="page-head"><div><div class="page-title">QC</div>${breadcrumb('QC')}</div></div><div class="card"><div class="qc-stage-tabs">${visible.map(t => `<div class="qc-stage-tab ${qcStageTab === t ? 'active' : ''}" onclick="setQcStageTab('${t}')">${t === 'QC_LAB' ? 'QC LAB' : 'QC MANAGER'}</div>`).join('')}</div><div class="toolbar"><div class="search-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input class="input" placeholder="Search…" oninput="qcSearch=this.value;TABLE_PAGES.qc=1;renderQcTable();"/></div></div><div class="tbl-wrap" id="qc-table-wrap"></div><div class="pager" id="qc-pager"></div></div><div class="modal-overlay" id="modal-qc-start"><div class="modal"><div class="modal-head"><h3 id="qc-start-title">Take</h3><p id="qc-start-desc"></p></div><div class="modal-body"><div class="field"><label class="field-label">Remarks</label><textarea class="textarea" id="qc-start-remarks"></textarea></div></div><div class="modal-foot"><button class="btn btn-outline btn-cancel" onclick="closeModal('modal-qc-start')">Cancel</button><button class="btn btn-send-blue" id="qc-start-btn" onclick="confirmQcStart()">Take</button></div></div></div><div class="modal-overlay" id="modal-qc-close"><div class="modal"><div class="modal-head"><h3>QC decision</h3><p id="qc-close-desc"></p></div><div class="modal-body"><div class="decision-row" style="grid-template-columns:1fr 1fr" id="qc-decision-row"><div class="decision-btn" data-d="approved" onclick="selectQcDecision('approved')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10v12M15 5.88 14 10h6.31a2 2 0 0 1 2 2.5l-1.5 6A2 2 0 0 1 18.83 20H7"/></svg>Approved</div><div class="decision-btn" data-d="rejected" onclick="selectQcDecision('rejected')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>Rejected</div></div><div class="decision-note" id="qc-decision-note"></div><div class="field" style="margin-top:14px"><label class="field-label">Remarks</label><textarea class="textarea" id="qc-close-remarks"></textarea></div></div><div class="modal-foot"><button class="btn btn-outline btn-cancel" onclick="closeModal('modal-qc-close')">Cancel</button><button class="btn btn-save-green" id="qc-close-btn" onclick="confirmQcClose()">Approved</button></div></div></div>` };
+      PAGE_RENDERERS.qc = function () { const role = DB.currentUser.role, visible = qcMainTab === 'INWARD_QC' ? ['QC_LAB'] : (role === 'QC Manager' ? ['QC_MANAGER'] : role === 'QC Lab' ? ['QC_LAB'] : ['QC_LAB', 'QC_MANAGER']); if (!visible.includes(qcStageTab)) qcStageTab = visible[0]; return `<div class="page-head"><div><div class="page-title">QC</div>${breadcrumb('QC')}</div></div><div class="card"><div class="qc-stage-tabs">${visible.map(t => `<div class="qc-stage-tab ${qcStageTab === t ? 'active' : ''}" onclick="setQcStageTab('${t}')">${t === 'QC_LAB' ? 'QC LAB' : 'QC MANAGER'}</div>`).join('')}</div><div class="toolbar"><div class="search-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input class="input" placeholder="Search…" oninput="qcSearch=this.value;TABLE_PAGES.qc=1;renderQcTable();"/></div></div><div class="tbl-wrap" id="qc-table-wrap"></div><div class="pager" id="qc-pager"></div></div><div class="modal-overlay" id="modal-qc-start"><div class="modal"><div class="modal-head"><h3 id="qc-start-title">Take</h3><p id="qc-start-desc"></p></div><div class="modal-body"><div class="field"><label class="field-label">Remarks</label><textarea class="textarea" id="qc-start-remarks"></textarea></div></div><div class="modal-foot"><button class="btn btn-outline btn-cancel" onclick="closeModal('modal-qc-start')">Cancel</button><button class="btn btn-send-blue" id="qc-start-btn" onclick="confirmQcStart()">Take</button></div></div></div><div class="modal-overlay" id="modal-qc-close"><div class="modal"><div class="modal-head"><h3>QC decision</h3><p id="qc-close-desc"></p></div><div class="modal-body"><div class="decision-row" style="grid-template-columns:1fr 1fr" id="qc-decision-row"><div class="decision-btn" data-d="approved" onclick="selectQcDecision('approved')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10v12M15 5.88 14 10h6.31a2 2 0 0 1 2 2.5l-1.5 6A2 2 0 0 1 18.83 20H7"/></svg>Approved</div><div class="decision-btn" data-d="rejected" onclick="selectQcDecision('rejected')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>Rejected</div></div><div class="decision-note" id="qc-decision-note"></div><div class="field" style="margin-top:14px"><label class="field-label">Remarks</label><textarea class="textarea" id="qc-close-remarks"></textarea></div></div><div class="modal-foot"><button class="btn btn-outline btn-cancel" onclick="closeModal('modal-qc-close')">Cancel</button><button class="btn btn-save-green" id="qc-close-btn" onclick="confirmQcClose()">Approved</button></div></div></div>` };
       window.renderQcTable = function () { const wrap = document.getElementById('qc-table-wrap'), pager = document.getElementById('qc-pager'); if (!wrap) return; let rows = qcMainTab === 'INWARD_QC' ? DB.inwards.filter(r => r.currentDept === qcStageTab).slice().sort((a, b) => b.id - a.id) : DB.stages.filter(s => s.kind === 'PRODUCTION' && s.currentDept === qcStageTab).slice().sort((a, b) => b.id - a.id); const q = qcSearch.trim().toLowerCase(); if (q) rows = rows.filter(r => String(r.docNo || r.batchNo).toLowerCase().includes(q) || r.items.some(it => String(it.itemName || itemLabel(it.itemId)).toLowerCase().includes(q))); const pageRows = paginateRows(rows, 'qc'); const head = qcMainTab === 'INWARD_QC' ? '<th>Inward No.</th>' : '<th>Batch No.</th>'; wrap.innerHTML = rows.length ? `<table class="dt"><thead><tr>${head}<th>Item(s)</th><th>Status</th><th style="text-align:right">Actions</th></tr></thead><tbody>${pageRows.map(r => { const code = qcMainTab === 'INWARD_QC' ? r.docNo : r.batchNo; const actions = r.status === 'Pending' ? iconAction(ICON_TAKE, 'Take', `openQcStart('${qcMainTab === 'INWARD_QC' ? 'inward' : 'prod'}',${r.id})`, 'take') : r.status === 'InProcess' ? iconAction(ICON_CHECK, 'Close stage', `openQcClose('${qcMainTab === 'INWARD_QC' ? 'inward' : 'prod'}',${r.id})`, 'approve') : ''; return `<tr><td class="cell-strong">${code}</td><td>${r.items.map(it => it.itemName || itemLabel(it.itemId)).join(', ')}</td><td>${statusBadge(r.status)}</td><td class="row-actions">${actions}</td></tr>` }).join('')}</tbody></table>` : emptyState('Nothing pending here right now', 'Items sent from the previous stage will show up here.'); if (pager) pager.innerHTML = pagerHtml(rows.length, 'qc', 'renderQcTable'); };
       window.selectQcDecision = function (d) { qcDecision = d; document.querySelectorAll('#qc-decision-row .decision-btn').forEach(b => { b.classList.remove('sel-pass', 'sel-reject'); if (b.dataset.d === d) b.classList.add(d === 'rejected' ? 'sel-reject' : 'sel-pass'); }); const btn = document.getElementById('qc-close-btn'); btn.textContent = d === 'rejected' ? 'Rejected' : 'Approved'; btn.className = 'btn ' + (d === 'rejected' ? 'btn-destructive' : 'btn-save-green'); document.getElementById('qc-decision-note').innerHTML = d === 'rejected' ? '' : ``; };
-      window.confirmQcClose = function () { const rec = qcActiveKind === 'inward' ? DB.inwards.find(r => r.id === qcActiveId) : DB.stages.find(s => s.id === qcActiveId); if (rec) { rec.status = qcDecision === 'rejected' ? 'Rejected' : 'Approved'; rec.currentDept = qcDecision === 'rejected' ? 'SCRAP' : (qcStageTab === 'QC_LAB' ? 'QC_MANAGER' : (qcMainTab === 'PRODUCTION_QC' ? 'PACKAGING' : 'RAW')); } closeModal('modal-qc-close'); renderQcTable(); toast(qcDecision === 'rejected' ? 'Sent to scrap' : 'Approved and moved to next stage'); };
+      window.confirmQcClose = function () { const rec = qcActiveKind === 'inward' ? DB.inwards.find(r => r.id === qcActiveId) : DB.stages.find(s => s.id === qcActiveId); if (rec) { rec.status = qcDecision === 'rejected' ? 'Rejected' : 'Approved'; rec.currentDept = qcDecision === 'rejected' ? 'SCRAP' : (qcMainTab === 'INWARD_QC' ? 'RAW' : (qcStageTab === 'QC_LAB' ? 'QC_MANAGER' : 'PACKAGING')); } closeModal('modal-qc-close'); renderQcTable(); toast(qcDecision === 'rejected' ? 'Sent to scrap' : 'Approved and moved to next stage'); };
 
       /* Packaging */
       let packagingFormStage = null;
@@ -6822,6 +6884,8 @@
            Each item stores its threshold in minStockQty.
            --------------------------------------------------------------- */
         const LOW_STOCK_ALERTED = new Set();
+        const REORDER_STOCK_ALERTED = new Set();
+        const MAX_STOCK_ALERTED = new Set();
         const LOW_STOCK_DEPARTMENTS = ['raw', 'production', 'qcFailed', 'packaging', 'store', 'dispatch'];
 
         function currentStockForItem(item) {
@@ -6831,35 +6895,83 @@
           return Number(departments.reduce((total, key) => total + Number(window.stockReportQty(key, item.id, unit) || 0), 0).toFixed(2));
         }
 
-        window.checkLowStockAlerts = function () {
+        /*
+         * Stock thresholds
+         * - Minimum Stock Qty: protected reserve. Production cannot consume stock
+         *   if the requested quantity would take the item below this level.
+         * - Re Order Qty: warning point. Reaching this quantity shows that a
+         *   purchase/replenishment should be planned (about 4–5 days of work).
+         * - Maximum Stock Qty: upper limit. Going above it shows an over-stock warning.
+         */
+        window.checkStockThresholdAlerts = function () {
           if (!Array.isArray(DB.items)) return;
+
           DB.items.forEach(item => {
+            const itemKey = Number(item.id);
             const minimum = Math.max(0, Number(item.minStockQty) || 0);
-            if (minimum <= 0) {
-              LOW_STOCK_ALERTED.delete(Number(item.id));
-              return;
+            const reorder = Math.max(0, Number(item.reOrderQty) || 0);
+            const maximum = Math.max(0, Number(item.maxStockQty) || 0);
+            const current = currentStockForItem(item);
+            const unit = item.baseUnit || 'units';
+
+            if (minimum <= 0 || current > minimum) {
+              LOW_STOCK_ALERTED.delete(itemKey);
+            }
+            if (reorder <= 0 || current > reorder) {
+              REORDER_STOCK_ALERTED.delete(itemKey);
+            }
+            if (maximum <= 0 || current <= maximum) {
+              MAX_STOCK_ALERTED.delete(itemKey);
             }
 
-            const current = currentStockForItem(item);
-            const itemKey = Number(item.id);
-
-            if (current < minimum) {
+            if (minimum > 0 && current <= minimum) {
               if (!LOW_STOCK_ALERTED.has(itemKey)) {
                 LOW_STOCK_ALERTED.add(itemKey);
-                const unit = item.baseUnit || 'units';
                 toast(
-                  `<span class="low-stock-title">Low stock: ${item.itemName}</span><span class="low-stock-detail">Current ${current.toLocaleString('en-IN', { maximumFractionDigits: 2 })} ${unit} · Minimum ${minimum.toLocaleString('en-IN', { maximumFractionDigits: 2 })} ${unit}</span>`,
-                  'low-stock',
-                  6500
+                  `<span class="low-stock-title">Minimum stock reached: ${item.itemName}</span><span class="low-stock-detail">Current ${current.toLocaleString('en-IN', { maximumFractionDigits: 2 })} ${unit} · Minimum ${minimum.toLocaleString('en-IN', { maximumFractionDigits: 2 })} ${unit} · Further consumption is blocked</span>`,
+                  'stock-blocked',
+                  7000
                 );
               }
-            } else {
-              LOW_STOCK_ALERTED.delete(itemKey);
+            } else if (reorder > 0 && current <= reorder) {
+              if (!REORDER_STOCK_ALERTED.has(itemKey)) {
+                REORDER_STOCK_ALERTED.add(itemKey);
+                toast(
+                  `<span class="low-stock-title">Re-order alert: ${item.itemName}</span><span class="low-stock-detail">Current ${current.toLocaleString('en-IN', { maximumFractionDigits: 2 })} ${unit} · Re-order at ${reorder.toLocaleString('en-IN', { maximumFractionDigits: 2 })} ${unit} · Approx. 4–5 days work remaining</span>`,
+                  'reorder-stock',
+                  7000
+                );
+              }
+            }
+
+            if (maximum > 0 && current > maximum) {
+              if (!MAX_STOCK_ALERTED.has(itemKey)) {
+                MAX_STOCK_ALERTED.add(itemKey);
+                toast(
+                  `<span class="low-stock-title">Maximum stock exceeded: ${item.itemName}</span><span class="low-stock-detail">Current ${current.toLocaleString('en-IN', { maximumFractionDigits: 2 })} ${unit} · Maximum ${maximum.toLocaleString('en-IN', { maximumFractionDigits: 2 })} ${unit}</span>`,
+                  'max-stock',
+                  7000
+                );
+              }
             }
           });
         };
 
-        /* Check immediately after stock-report data is available. */
+        /* Backward-compatible name used by existing page refresh hooks. */
+        window.checkLowStockAlerts = window.checkStockThresholdAlerts;
+
+        /*
+         * Returns the stock that can actually be consumed while keeping the
+         * configured minimum reserve untouched.
+         */
+        window.getConsumableStockForItem = function (item) {
+          if (!item) return 0;
+          const current = currentStockForItem(item);
+          const minimum = Math.max(0, Number(item.minStockQty) || 0);
+          return Math.max(0, Number((current - minimum).toFixed(2)));
+        };
+
+                /* Check immediately after stock-report data is available. */
         setTimeout(window.checkLowStockAlerts, 0);
 
         /* ------------------------- Templates ------------------------- */
@@ -7366,10 +7478,19 @@
             if (type === 'Dispatch return scrap') return reason.includes('dispatch') || reason.includes('return');
             return false;
           });
+          DB.stock.scrapUsed = DB.stock.scrapUsed || [];
           for (const row of rows) {
             if (remaining <= 0) break;
             const available = Math.max(0, Number(row.qty) || 0);
             const used = Math.min(available, remaining);
+            if (used > 0) {
+              DB.stock.scrapUsed.push({
+                itemId: Number(row.itemId),
+                qty: used,
+                unit: row.unit,
+                reason: row.reason
+              });
+            }
             row.qty = available - used;
             remaining -= used;
           }
@@ -7393,6 +7514,42 @@
 
           if (scrapQty > 0 && scrapAvailability(productionScrapType) < scrapQty) {
             toast('Selected scrap quantity is not available', 'error');
+            return;
+          }
+
+          /*
+           * Minimum Stock Qty is a protected reserve. A production batch can
+           * consume only the quantity above that reserve.
+           */
+          const stockViolations = [];
+          validLines.forEach(line => {
+            const item = DB.items.find(i => Number(i.id) === Number(line.itemId));
+            const minimum = Math.max(0, Number(item?.minStockQty) || 0);
+            if (!item || minimum <= 0) return;
+
+            const available = typeof window.getConsumableStockForItem === 'function'
+              ? window.getConsumableStockForItem(item)
+              : 0;
+            const requested = Number(line.qty) || 0;
+
+            if (requested > available) {
+              stockViolations.push({
+                name: item.itemName,
+                requested,
+                available,
+                minimum,
+                unit: item.baseUnit || line.unit || 'KG'
+              });
+            }
+          });
+
+          if (stockViolations.length) {
+            const first = stockViolations[0];
+            toast(
+              `<span class="low-stock-title">Production blocked: ${first.name}</span><span class="low-stock-detail">Required ${first.requested.toLocaleString('en-IN', { maximumFractionDigits: 2 })} ${first.unit} · Consumable ${first.available.toLocaleString('en-IN', { maximumFractionDigits: 2 })} ${first.unit} · Minimum reserve ${first.minimum.toLocaleString('en-IN', { maximumFractionDigits: 2 })} ${first.unit}</span>`,
+              'stock-blocked',
+              8000
+            );
             return;
           }
 
@@ -7445,9 +7602,9 @@
       <div class="card premium-module-card stock-shell">
         <div class="card-head module-card-head"><div><div class="eyebrow-row"><span class="ch-dot"></span></div><h2>Stock Reports</h2><p>Clear department-wise stock with dedicated unit reporting for chemicals, packaging and scrap.</p></div></div>
         <div class="stock-tab-wrap"><div class="stock-report-tabs stock-report-tabs-wide">
-          <div class="stock-report-tab ${stockReportTab === 'chemical' ? 'active' : ''}" data-tab="chemical" onclick="setStockReportTab('chemical')"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 3h6M10 3v6.5L5 18a2 2 0 0 0 1.8 3h10.4A2 2 0 0 0 19 18l-5-8.5V3"/><path d="M7 15h10"/></svg></span><span><b>Chemical Stock</b><small>KG / LTR</small></span></div>
-          <div class="stock-report-tab ${stockReportTab === 'packaging' ? 'active' : ''}" data-tab="packaging" onclick="setStockReportTab('packaging')"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m3 7 9-4 9 4-9 5-9-5Z"/><path d="M3 7v10l9 5 9-5V7M12 12v10"/></svg></span><span><b>Packaging Stock</b><small>PCS</small></span></div>
-          <div class="stock-report-tab ${stockReportTab === 'scrap' ? 'active' : ''}" data-tab="scrap" onclick="setStockReportTab('scrap')"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m4 7 8-4 8 4-8 4-8-4Z"/><path d="M4 12l8 4 8-4M4 17l8 4 8-4"/></svg></span><span><b>Scrap Report</b><small>KG / LTR</small></span></div>
+          <div class="stock-report-tab ${stockReportTab === 'chemical' ? 'active' : ''}" data-tab="chemical" onclick="setStockReportTab('chemical')"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 3h6M10 3v6.5L5 18a2 2 0 0 0 1.8 3h10.4A2 2 0 0 0 19 18l-5-8.5V3"/><path d="M7 15h10"/></svg></span><span><b>Chemical Stock</b><small>KG</small></span></div>
+          <div class="stock-report-tab ${stockReportTab === 'packaging' ? 'active' : ''}" data-tab="packaging" onclick="setStockReportTab('packaging')"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m3 7 9-4 9 4-9 5-9-5Z"/><path d="M3 7v10l9 5 9-5V7M12 12v10"/></svg></span><span><b>Packaging Stock</b><small>KG</small></span></div>
+          <div class="stock-report-tab ${stockReportTab === 'scrap' ? 'active' : ''}" data-tab="scrap" onclick="setStockReportTab('scrap')"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m4 7 8-4 8 4-8 4-8-4Z"/><path d="M4 12l8 4 8-4M4 17l8 4 8-4"/></svg></span><span><b>Scrap Report</b><small>KG</small></span></div>
         </div></div>
         <div id="stock-report-wrap"></div>
       </div>`;
@@ -7538,6 +7695,8 @@
         if (it.baseUnit === 'LTR' && !it.ltrQty) it.ltrQty = 80 + (it.id * 29) % 380;
         if (it.baseUnit === 'PCS' && !it.qty) it.qty = 250 + (it.id * 53) % 900;
         if (it.minStockQty == null || Number.isNaN(Number(it.minStockQty))) it.minStockQty = 0;
+        if (it.maxStockQty == null || Number.isNaN(Number(it.maxStockQty))) it.maxStockQty = 0;
+        if (it.reOrderQty == null || Number.isNaN(Number(it.reOrderQty))) it.reOrderQty = 0;
       });
 
       DB.vendors.forEach((v, i) => { v.gstin = v.gstin || ('24AAAAA000' + i + 'A1Z5'); v.status = v.status || 'Active'; });
@@ -7974,6 +8133,7 @@
         }
         closeModal('modal-prod-stage'); renderProdTable();
         toast(prodStageMode === 'start' ? 'Batch moved to In Process' : 'Batch completed — waiting for QC Lab');
+        setTimeout(() => { if (typeof window.checkStockThresholdAlerts === 'function') window.checkStockThresholdAlerts(); }, 80);
       };
 
       window.renderProdTable = function () {
@@ -8182,10 +8342,32 @@
       const ITEM_COLORS = ['#d35b19', '#3a76ac', '#348c5a', '#ca8522', '#6a5bd3', '#c2436b', '#2f8f8a', '#8a6d3b'];
 
       function chemItems() { return DB.items.filter(i => ['KG', 'LTR'].includes(i.baseUnit)); }
-      function deptBreakdown(key, unit) {
+
+      /* Dashboard stock is displayed only in KG.
+         LTR-based demo stock is converted to KG using the item's gravity.
+         This keeps the dashboard independent from the LTR presentation used
+         elsewhere in the application. */
+      function dashboardStockQtyKg(key, item) {
+        if (!item) return 0;
+
+        const kgQty = Number(window.stockReportQty(key, item.id, 'KG') || 0);
+        if (kgQty > 0) return kgQty;
+
+        const ltrQty = Number(window.stockReportQty(key, item.id, 'LTR') || 0);
+        if (ltrQty > 0) {
+          return ltrQty * Number(item.gravity || 1);
+        }
+
+        return 0;
+      }
+
+      function deptBreakdown(key) {
         return chemItems()
-          .filter(it => it.baseUnit === unit)
-          .map(it => ({ code: it.itemCode, name: it.itemName, qty: window.stockReportQty(key, it.id, unit) }))
+          .map(it => ({
+            code: it.itemCode,
+            name: it.itemName,
+            qty: dashboardStockQtyKg(key, it)
+          }))
           .filter(r => r.qty > 0)
           .sort((a, b) => b.qty - a.qty);
       }
@@ -8217,12 +8399,12 @@
          --------------------------------------------------------------- */
       function buildChartModel() {
         return DEPTS.map(d => {
-          const kgRows = deptBreakdown(d.key, 'KG'), ltrRows = deptBreakdown(d.key, 'LTR');
+          const kgRows = deptBreakdown(d.key);
           return {
-            label: d.label, color: d.color,
+            label: d.label,
+            color: d.color,
             kg: Math.round(kgRows.reduce((a, r) => a + r.qty, 0)),
-            ltr: Math.round(ltrRows.reduce((a, r) => a + r.qty, 0)),
-            kgRows, ltrRows
+            kgRows
           };
         });
       }
@@ -8231,7 +8413,7 @@
         const model = buildChartModel();
         window.__chartModel = model;
         const W = 660, H = 290, padL = 52, padR = 16, padT = 20, padB = 52;
-        const max = Math.max(10, ...model.map(d => Math.max(d.kg, d.ltr)));
+        const max = Math.max(10, ...model.map(d => d.kg));
         const step = (W - padL - padR) / model.length;
         const bw = Math.min(22, step / 3.4);
         const base = H - padB;
@@ -8249,11 +8431,10 @@
         }
         model.forEach((d, i) => {
           const cx = padL + step * i + step / 2;
-          const kgH = Math.max(3, base - y(d.kg)), ltrH = Math.max(3, base - y(d.ltr));
+          const kgH = Math.max(3, base - y(d.kg));
           bars += `<g class="bar-group">
             <rect class="bar-hit" x="${cx - step / 2 + 4}" y="${padT}" width="${step - 8}" height="${base - padT}" fill="transparent"/>
-            <rect class="chart-bar" data-idx="${i}" data-unit="KG" x="${cx - bw - 3}" y="${y(d.kg)}" width="${bw}" height="${kgH}" rx="5" fill="url(#cg${i})"/>
-            <rect class="chart-bar" data-idx="${i}" data-unit="LTR" x="${cx + 3}" y="${y(d.ltr)}" width="${bw}" height="${ltrH}" rx="5" fill="url(#cgl${i})"/>
+            <rect class="chart-bar" data-idx="${i}" data-unit="KG" x="${cx - bw / 2}" y="${y(d.kg)}" width="${bw}" height="${kgH}" rx="5" fill="url(#cg${i})"/>
             <text x="${cx}" y="${base + 20}" text-anchor="middle" font-size="10.5" font-weight="700" fill="#66707b">${d.label}</text>
             <rect x="${cx - 14}" y="${base + 27}" width="28" height="3" rx="2" fill="${d.color}" opacity=".55"/>
           </g>`;
@@ -8277,15 +8458,15 @@
 
         function show(bar, evt) {
           const d = model[Number(bar.dataset.idx)]; if (!d) return;
-          const unit = bar.dataset.unit;
-          const rows = unit === 'KG' ? d.kgRows : d.ltrRows;
-          const total = unit === 'KG' ? d.kg : d.ltr;
+          const rows = d.kgRows;
+          const total = d.kg;
+          const unit = 'KG';
           tip.innerHTML = `<div class="tip-head" style="--tip-accent:${d.color}">
               <span class="tip-dot"></span><b>${d.label}</b><span class="tip-unit">${unit}</span>
             </div>
             <div class="tip-rows">${rows.length ? rows.slice(0, 6).map(r => `
               <div class="tip-row"><span class="tip-name"><i>${r.code}</i>${r.name}</span><span class="tip-qty">${r.qty.toLocaleString('en-IN')} <small>${unit}</small></span></div>`).join('')
-              : '<div class="tip-empty">No stock recorded in this unit</div>'}
+              : '<div class="tip-empty">No stock recorded in KG</div>'}
             </div>
             <div class="tip-foot"><span>Total</span><b>${total.toLocaleString('en-IN')} ${unit}</b></div>`;
           tip.classList.add('show');
@@ -8312,8 +8493,8 @@
          --------------------------------------------------------------- */
       function topStockHtml() {
         const rows = chemItems().map((it, i) => {
-          const total = DEPTS.reduce((a, d) => a + window.stockReportQty(d.key, it.id, it.baseUnit), 0);
-          return { code: it.itemCode, name: it.itemName, unit: it.baseUnit, total: Math.round(total) };
+          const total = DEPTS.reduce((a, d) => a + dashboardStockQtyKg(d.key, it), 0);
+          return { code: it.itemCode, name: it.itemName, unit: 'KG', total: Math.round(total) };
         }).sort((a, b) => b.total - a.total).slice(0, 5);
         const max = Math.max(1, ...rows.map(r => r.total));
         return rows.map((r, i) => {
@@ -8355,7 +8536,7 @@
           </div>`;
 
         const model = buildChartModel();
-        const totals = model.reduce((a, d) => ({ kg: a.kg + d.kg, ltr: a.ltr + d.ltr }), { kg: 0, ltr: 0 });
+        const totals = model.reduce((a, d) => ({ kg: a.kg + d.kg }), { kg: 0 });
 
         return `<div class="page-head"><div><div class="page-title">Dashboard</div><div class="breadcrumb" style="margin-top:6px;"><span class="current"></span></div></div></div>
         <div class="quick-access-panel">
@@ -8371,12 +8552,11 @@
           <div class="card dash-chart-card">
             <div class="dash-chart-head">
               <div><h3>Stock report — department wise</h3></div>
-              <div class="chart-legend"><span class="lg lg-solid"></span>KG<span class="lg lg-soft"></span>LTR</div>
+              <div class="chart-legend"><span class="lg lg-solid"></span>KG</div>
             </div>
             <div class="dash-chart-body">${stockChartHtml()}</div>
             <div class="dash-chart-foot">
               <div><small>Total KG</small><b>${totals.kg.toLocaleString('en-IN')}</b></div>
-              <div><small>Total LTR</small><b>${totals.ltr.toLocaleString('en-IN')}</b></div>
             </div>
           </div>
           <div class="card dash-chart-card">
@@ -8885,7 +9065,8 @@
     /* --- Final Template: percentage + dynamic KG/LTR/PCS quantities --- */
     .final-template-output-grid {
       display: grid;
-      grid-template-columns: minmax(180px, 1.2fr) minmax(250px, 2fr) minmax(130px, 1fr) minmax(120px, 1fr) minmax(120px, 1fr);
+      /* Type | Finished Good | Unit | KG QTY — no unused LTR column/space. */
+      grid-template-columns: 170px minmax(320px, 2.7fr) 120px 180px;
       gap: 14px;
       align-items: end;
     }
@@ -8908,12 +9089,14 @@
 
     .final-template-head,
     .composition-row.final-template-row {
-      grid-template-columns: minmax(220px, 2fr) minmax(100px, .8fr) minmax(105px, 1fr) minmax(105px, 1fr) minmax(95px, .8fr) minmax(105px, .9fr) 32px;
+      /* Raw Material | Percentage | KG QTY | Amount | Remove */
+      grid-template-columns: minmax(300px, 2.4fr) minmax(110px, .9fr) minmax(120px, 1fr) minmax(120px, 1fr) 32px;
     }
 
     .final-template-head-pcs,
     .composition-row.final-template-pcs-row {
-      grid-template-columns: minmax(220px, 2fr) minmax(100px, .8fr) minmax(105px, 1fr) minmax(95px, .8fr) minmax(105px, .9fr) 32px;
+      /* PCS templates keep PCS QTY, but Cost is removed and Amount stays beside QTY. */
+      grid-template-columns: minmax(300px, 2.4fr) minmax(110px, .9fr) minmax(120px, 1fr) minmax(120px, 1fr) 32px;
     }
 
     .final-template-head {
@@ -10651,38 +10834,48 @@
       function itemCategoryOptions() { return DB.itemCategories.map(c => ({ value: c.id, label: c.name })); }
       function itemMetricsHtml(it, categoryId) {
         const v = it || {};
-        if (Number(categoryId) === 4) {
+        const isPackaging = Number(categoryId) === 4;
+        if (isPackaging) {
           return `<div class="item-metrics-grid packaging-metrics">
-      <div class="field"><label class="field-label">PCS Qty</label><input class="input" id="im-qty" type="number" min="0" step="0.01" value="${v.qty ?? ''}"></div>
-      <div class="field"><label class="field-label">Minimum Stock Qty</label><input class="input" id="final-im-min-stock" type="number" min="0" step="0.01" value="${v.minStockQty ?? ''}" placeholder="e.g. 100"></div>
+      <div class="field"><label class="field-label">PCS Qty</label><input class="input" id="im-qty" type="number" min="0" step="0.01" value="${v.qty ?? ''}" placeholder="e.g. 100"></div>
+      <div class="field"><label class="field-label">Min Stock Qty</label><input class="input" id="final-im-min-stock" type="number" min="0" step="0.01" value="${v.minStockQty ?? ''}" placeholder="e.g. 100"></div>
+      <div class="field"><label class="field-label">Max Stock Qty</label><input class="input" id="final-im-max-stock" type="number" min="0" step="0.01" value="${v.maxStockQty ?? ''}" placeholder="e.g. 1000"></div>
+      <div class="field"><label class="field-label">Re Order Qty</label><input class="input" id="final-im-reorder" type="number" min="0" step="0.01" value="${v.reOrderQty ?? ''}" placeholder="e.g. 300"></div>
     </div>`;
         }
         return `<div class="item-metrics-grid">
-      <div class="field"><label class="field-label">LTR Qty</label><input class="input" id="im-ltrqty" type="number" min="0" step="0.01" value="${v.ltrQty ?? ''}" oninput="calculateItemQty('ltr')"></div>
-      <div class="field"><label class="field-label">Gravity</label><input class="input" id="im-gravity" type="number" min="0" step="0.01" value="${v.gravity ?? ''}" oninput="calculateItemQty('gravity')"></div>
-      <div class="field"><label class="field-label">KG Qty</label><input class="input" id="im-kgqty" type="number" min="0" step="0.01" value="${v.kgQty ?? ''}" oninput="calculateItemQty('kg')"></div>
-      <div class="field"><label class="field-label">Minimum Stock Qty</label><input class="input" id="final-im-min-stock" type="number" min="0" step="0.01" value="${v.minStockQty ?? ''}" placeholder="e.g. 100"></div>
+      <div class="field"><label class="field-label">KG Qty</label><input class="input" id="im-kgqty" type="number" min="0" step="0.01" value="${v.kgQty ?? ''}" placeholder="e.g. 500"></div>
+      <div class="field"><label class="field-label">Min Stock Qty</label><input class="input" id="final-im-min-stock" type="number" min="0" step="0.01" value="${v.minStockQty ?? ''}" placeholder="e.g. 100"></div>
+      <div class="field"><label class="field-label">Maxm Stock Qty</label><input class="input" id="final-im-max-stock" type="number" min="0" step="0.01" value="${v.maxStockQty ?? ''}" placeholder="e.g. 1000"></div>
+      <div class="field"><label class="field-label">Re Order Qty</label><input class="input" id="final-im-reorder" type="number" min="0" step="0.01" value="${v.reOrderQty ?? ''}" placeholder="e.g. 300"></div>
     </div>`;
       }
       window.renderFinalItemMetrics = function () {
         const cat = Number(comboGetValue('final-im-cat-combo'));
+        const current = {
+          qty: document.getElementById('im-qty')?.value || '',
+          kgQty: document.getElementById('im-kgqty')?.value || '',
+          minStockQty: document.getElementById('final-im-min-stock')?.value || '',
+          maxStockQty: document.getElementById('final-im-max-stock')?.value || '',
+          reOrderQty: document.getElementById('final-im-reorder')?.value || ''
+        };
+        const stored = finalItemEditId ? (DB.items.find(x => x.id === finalItemEditId) || {}) : {};
+        const values = current.minStockQty !== '' || current.maxStockQty !== '' || current.reOrderQty !== '' || current.qty !== '' || current.kgQty !== ''
+          ? { ...stored, ...current }
+          : stored;
         const existing = document.querySelector('#modal-final-item .item-metrics-grid');
-        if (existing) existing.outerHTML = itemMetricsHtml(finalItemEditId ? (DB.items.find(x => x.id === finalItemEditId) || {}) : {}, cat);
+        if (existing) existing.outerHTML = itemMetricsHtml(values, cat);
       };
       window.onFinalItemCategoryChange = function () {
         window.renderFinalItemMetrics();
       };
-      window.calculateItemQty = function (source) {
-        const l = document.getElementById('im-ltrqty'), g = document.getElementById('im-gravity'), k = document.getElementById('im-kgqty');
-        if (!l || !g || !k) return;
-        const lv = Number(l.value), gv = Number(g.value), kv = Number(k.value);
-        if (source === 'ltr' && lv > 0 && gv > 0) k.value = (lv * gv).toFixed(2);
-        else if (source === 'kg' && kv > 0 && gv > 0) l.value = (kv / gv).toFixed(2);
-        else if (source === 'gravity' && gv > 0) {
-          if (lv > 0) k.value = (lv * gv).toFixed(2);
-          else if (kv > 0) l.value = (kv / gv).toFixed(2);
-        }
-      };
+      /*
+       * LTR/Gravity conversion is no longer part of Item Master.
+       * Keep a no-op compatibility function because older inline handlers
+       * can still exist in legacy markup.
+       */
+      window.calculateItemQty = function () {};
+
       PAGE_RENDERERS.items = function () {
         return `<div class="page-head"><div><div class="page-title"><span class="title-accent"></span>Item</div>${breadcrumb('Item')}</div>
       <button class="btn btn-primary" onclick="openFinalItemModal(null)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg> New Item</button></div>
@@ -10702,33 +10895,99 @@
       window.renderFinalItemsTable = function () {
         const w = document.getElementById('final-items-table'), p = document.getElementById('final-items-pager'); if (!w) return;
         const q = (itemsSearch || '').trim().toLowerCase(); let rows = DB.items.filter(i => !q || [i.itemCode, i.itemName].some(x => String(x || '').toLowerCase().includes(q)));
-        const page = paginateRows(rows, 'items'); w.innerHTML = rows.length ? `<table class="dt"><thead><tr><th>Item Code</th><th>Item Name</th><th>Item Category</th><th>QTY</th><th style="text-align:right">Actions</th></tr></thead><tbody>${page.map(i => { const c = DB.itemCategories.find(x => x.id === i.itemCategoryId); const isPackaging = Number(i.itemCategoryId) === 4; const ltrQty = Number(i.ltrQty || 0); const kgQty = Number(i.kgQty || 0); const pcsQty = Number(i.qty || 0); const qtyHtml = isPackaging ? `<div class="qty-stack"><div><b>PCS</b><span>${pcsQty ? pcsQty.toLocaleString('en-IN', { maximumFractionDigits: 2 }) : '—'}</span></div></div>` : `<div class="qty-stack"><div><b>LTR</b><span>${ltrQty ? ltrQty.toLocaleString('en-IN', { maximumFractionDigits: 2 }) : '—'}</span></div><div><b>KG</b><span>${kgQty ? kgQty.toLocaleString('en-IN', { maximumFractionDigits: 2 }) : '—'}</span></div></div>`; return `<tr><td><span class="cell-code">${i.itemCode}</span></td><td class="cell-strong">${i.itemName}</td><td>${c?.name || '—'}</td><td>${qtyHtml}</td><td class="row-actions">${iconAction(ICON_EDIT, 'Edit', 'openFinalItemModal(' + i.id + ')')}</td></tr>` }).join('')}</tbody></table>` : emptyState('No items found', 'Try a different search, or add a new item.');
+        const page = paginateRows(rows, 'items'); w.innerHTML = rows.length ? `<table class="dt"><thead><tr><th>Item Code</th><th>Item Name</th><th>Item Category</th><th>QTY</th><th style="text-align:right">Actions</th></tr></thead><tbody>${page.map(i => { const c = DB.itemCategories.find(x => x.id === i.itemCategoryId); const isPackaging = Number(i.itemCategoryId) === 4; const kgQty = Number(i.kgQty || 0); const pcsQty = Number(i.qty || 0); const qtyHtml = isPackaging ? `<div class="qty-stack"><div><b>PCS</b><span>${pcsQty ? pcsQty.toLocaleString('en-IN', { maximumFractionDigits: 2 }) : '—'}</span></div></div>` : `<div class="qty-stack"><div><b>KG</b><span>${kgQty ? kgQty.toLocaleString('en-IN', { maximumFractionDigits: 2 }) : '—'}</span></div></div>`; return `<tr><td><span class="cell-code">${i.itemCode}</span></td><td class="cell-strong">${i.itemName}</td><td>${c?.name || '—'}</td><td>${qtyHtml}</td><td class="row-actions">${iconAction(ICON_EDIT, 'Edit', 'openFinalItemModal(' + i.id + ')')}</td></tr>` }).join('')}</tbody></table>` : emptyState('No items found', 'Try a different search, or add a new item.');
         if (p) p.innerHTML = pagerHtml(rows.length, 'items', 'renderFinalItemsTable');
       };
       window.openFinalItemModal = function (id) {
-        finalItemEditId = id; const it = id ? DB.items.find(x => x.id === id) : null;
+        finalItemEditId = id;
+        const it = id ? DB.items.find(x => x.id === id) : null;
         document.getElementById('final-item-title').textContent = it ? 'Edit Item' : 'New Item';
         document.getElementById('final-im-save').textContent = it ? 'Update' : 'Save';
         document.getElementById('final-im-code').value = it?.itemCode || '';
         document.getElementById('final-im-name').value = it?.itemName || '';
-        document.getElementById('final-im-min-stock').value = it?.minStockQty ?? '';
         document.getElementById('final-im-cat').innerHTML = comboHtml('final-im-cat-combo', 'Select category', itemCategoryOptions(), 'onFinalItemCategoryChange', it?.itemCategoryId || '');
         const metrics = document.querySelector('#modal-final-item .item-metrics-grid');
-        if (metrics) metrics.outerHTML = itemMetricsHtml(it || {}, it?.itemCategoryId || '');
+        if (metrics) metrics.outerHTML = itemMetricsHtml(it || {}, it?.itemCategoryId || null);
         openModal('modal-final-item');
       };
+
       window.submitFinalItem = function () {
-        const code = document.getElementById('final-im-code').value.trim(), name = document.getElementById('final-im-name').value.trim(), cat = Number(comboGetValue('final-im-cat-combo'));
+        const code = document.getElementById('final-im-code').value.trim();
+        const name = document.getElementById('final-im-name').value.trim();
+        const cat = Number(comboGetValue('final-im-cat-combo'));
         const isPackaging = cat === 4;
+
         const qty = Number(document.getElementById('im-qty')?.value) || 0;
-        const ltr = Number(document.getElementById('im-ltrqty')?.value) || 0, kg = Number(document.getElementById('im-kgqty')?.value) || 0, gravity = Number(document.getElementById('im-gravity')?.value) || 0;
+        const kgQty = Number(document.getElementById('im-kgqty')?.value) || 0;
         const minStockQty = Math.max(0, Number(document.getElementById('final-im-min-stock')?.value) || 0);
-        if (!code || !name || !cat) { toast('Fill item category, item code and item name', 'error'); return; }
-        const baseUnit = cat === 4 ? 'PCS' : (ltr > 0 ? 'LTR' : 'KG');
-        const data = { itemCode: code, itemName: name, itemCategoryId: cat, baseUnit, gravity: isPackaging ? 0 : gravity, ltrQty: isPackaging ? 0 : ltr, kgQty: isPackaging ? 0 : kg, qty: isPackaging ? qty : (baseUnit === 'LTR' ? ltr : kg), minStockQty };
-        if (finalItemEditId) Object.assign(DB.items.find(x => x.id === finalItemEditId), data); else DB.items.push({ id: Math.max(0, ...DB.items.map(x => x.id)) + 1, ...data });
-        closeModal('modal-final-item'); renderFinalItemsTable(); toast(finalItemEditId ? 'Item updated' : 'Item created');
-        setTimeout(() => { if (typeof window.checkLowStockAlerts === 'function') window.checkLowStockAlerts(); }, 80);
+        const maxStockQty = Math.max(0, Number(document.getElementById('final-im-max-stock')?.value) || 0);
+        const reOrderQty = Math.max(0, Number(document.getElementById('final-im-reorder')?.value) || 0);
+
+        if (!code || !name || !cat) {
+          toast('Fill item category, item code and item name', 'error');
+          return;
+        }
+
+        if (maxStockQty > 0 && minStockQty > maxStockQty) {
+          toast('Minimum Stock Qty cannot be greater than Maximum Stock Qty', 'error');
+          return;
+        }
+
+        if (reOrderQty > 0 && maxStockQty > 0 && reOrderQty > maxStockQty) {
+          toast('Re Order Qty cannot be greater than Maximum Stock Qty', 'error');
+          return;
+        }
+
+        if (reOrderQty > 0 && minStockQty > 0 && reOrderQty < minStockQty) {
+          toast('Re Order Qty should be greater than or equal to Minimum Stock Qty', 'error');
+          return;
+        }
+
+        if (isPackaging && qty <= 0) {
+          toast('Enter a valid PCS Qty', 'error');
+          return;
+        }
+
+        if (!isPackaging && kgQty <= 0) {
+          toast('Enter a valid KG Qty', 'error');
+          return;
+        }
+
+        /*
+         * New Item Master standard:
+         * - Chemical / Semi Finished / Finished Good => KG only
+         * - Packaging => PCS
+         * LTR and Gravity are no longer captured here.
+         */
+        const data = {
+          itemCode: code,
+          itemName: name,
+          itemCategoryId: cat,
+          baseUnit: isPackaging ? 'PCS' : 'KG',
+          gravity: 0,
+          ltrQty: 0,
+          kgQty: isPackaging ? 0 : kgQty,
+          qty: isPackaging ? qty : kgQty,
+          minStockQty,
+          maxStockQty,
+          reOrderQty
+        };
+
+        if (finalItemEditId) {
+          Object.assign(DB.items.find(x => x.id === finalItemEditId), data);
+        } else {
+          DB.items.push({
+            id: Math.max(0, ...DB.items.map(x => x.id)) + 1,
+            ...data
+          });
+        }
+
+        closeModal('modal-final-item');
+        renderFinalItemsTable();
+        toast(finalItemEditId ? 'Item updated' : 'Item created');
+        setTimeout(() => {
+          if (typeof window.checkStockThresholdAlerts === 'function') window.checkStockThresholdAlerts();
+        }, 80);
       };
       PAGE_INIT.items = function () { renderFinalItemsTable(); };
 
@@ -10751,7 +11010,6 @@
       function finalTemplateOutputValues() {
         return {
           kg: document.getElementById('final-tpl-kgqty')?.value || '',
-          ltr: document.getElementById('final-tpl-ltrqty')?.value || '',
           pcs: document.getElementById('final-tpl-pcsqty')?.value || ''
         };
       }
@@ -10760,50 +11018,39 @@
         const host = document.getElementById('final-tpl-output-metrics');
         if (!host) return;
         const unit = finalTemplateOutputUnit();
+
+        /*
+         * KG is the only quantity used for chemical/raw-material templates.
+         * PCS remains available for packaging templates so their existing
+         * behaviour is not broken. LTR QTY is intentionally removed.
+         */
         if (unit === 'PCS') {
           host.innerHTML = `<div class="field"><label class="field-label">PCS QTY</label><input class="input" id="final-tpl-pcsqty" type="number" min="0" step="0.01" placeholder="PCS quantity" value="${values.pcs ?? ''}" oninput="onFinalTemplateMainQtyChange('pcs', this.value)"></div>`;
           return;
         }
-        if (unit === 'KG') {
-          host.innerHTML = `
-            <div class="field"><label class="field-label">KG QTY</label><input class="input" id="final-tpl-kgqty" type="number" min="0" step="0.01" placeholder="KG quantity" value="${values.kg ?? ''}" oninput="onFinalTemplateMainQtyChange('kg', this.value)"></div>
-            <div class="field"><label class="field-label">LTR QTY</label><input class="input" id="final-tpl-ltrqty" type="number" min="0" step="0.01" placeholder="LTR quantity" value="${values.ltr ?? ''}" oninput="onFinalTemplateMainQtyChange('ltr', this.value)"></div>`;
-        } else if (unit === 'LTR') {
-          host.innerHTML = `
-            <div class="field"><label class="field-label">LTR QTY</label><input class="input" id="final-tpl-ltrqty" type="number" min="0" step="0.01" placeholder="LTR quantity" value="${values.ltr ?? ''}" oninput="onFinalTemplateMainQtyChange('ltr', this.value)"></div>
-            <div class="field"><label class="field-label">KG QTY</label><input class="input" id="final-tpl-kgqty" type="number" min="0" step="0.01" placeholder="KG quantity" value="${values.kg ?? ''}" oninput="onFinalTemplateMainQtyChange('kg', this.value)"></div>`;
-        } else {
-          host.innerHTML = `<div class="field"><label class="field-label">KG / LTR QTY</label><input class="input" id="final-tpl-qty-placeholder" type="number" min="0" step="0.01" placeholder="Select unit first" disabled></div>`;
-        }
+
+        host.innerHTML = `<div class="field"><label class="field-label">KG QTY</label><input class="input" id="final-tpl-kgqty" type="number" min="0" step="0.01" placeholder="KG quantity" value="${values.kg ?? ''}" oninput="onFinalTemplateMainQtyChange('kg', this.value)"></div>`;
       }
 
       window.onFinalTemplateMainQtyChange = function (source, value) {
-        // Main KG/LTR/PCS quantities are entered independently by the user.
-        // Do not calculate one main quantity from the other. Raw-material
-        // quantities are calculated from the selected main-unit quantity + percentage.
+        // Raw-material KG QTY is always calculated from Main KG QTY × Percentage.
+        // No LTR quantity is used anywhere in the active Template form.
         finalTemplateLines.forEach(l => recalcFinalTemplateLine(l.key));
       };
 
       function finalTemplateMainReferenceQty() {
         const unit = finalTemplateOutputUnit();
         if (unit === 'PCS') return Number(document.getElementById('final-tpl-pcsqty')?.value) || 0;
-        if (unit === 'LTR') return Number(document.getElementById('final-tpl-ltrqty')?.value) || 0;
-        if (unit === 'KG') return Number(document.getElementById('final-tpl-kgqty')?.value) || 0;
-        return 0;
+        return Number(document.getElementById('final-tpl-kgqty')?.value) || 0;
       }
 
       function finalTemplateLineQtyForUnit(line) {
         if (line.unit === 'PCS') return Number(line.pcsQty) || 0;
-        if (line.unit === 'LTR') return Number(line.ltrQty) || 0;
         return Number(line.kgQty) || 0;
       }
 
       function recalcFinalTemplateLineQuantities(line) {
         const percentage = Number(line.percentage) || 0;
-
-        // LTR and KG percentages are calculated independently from their
-        // respective main quantities. Do not use one to derive the other.
-        const mainLtrQty = Number(document.getElementById('final-tpl-ltrqty')?.value) || 0;
         const mainKgQty = Number(document.getElementById('final-tpl-kgqty')?.value) || 0;
         const mainPcsQty = Number(document.getElementById('final-tpl-pcsqty')?.value) || 0;
 
@@ -10812,10 +11059,9 @@
           line.kgQty = '';
           line.ltrQty = '';
         } else {
-          // Example: Main LTR = 1000, Main KG = 100, Percentage = 50%
-          // => Raw LTR = 500 and Raw KG = 50.
-          line.ltrQty = mainLtrQty && percentage ? (mainLtrQty * percentage / 100).toFixed(2) : '';
+          // Raw-material KG QTY = Main KG QTY × Percentage / 100.
           line.kgQty = mainKgQty && percentage ? (mainKgQty * percentage / 100).toFixed(2) : '';
+          line.ltrQty = '';
           line.pcsQty = '';
         }
       }
@@ -10828,8 +11074,8 @@
         if (head) {
           head.className = 'final-template-head' + (isPcsTemplate ? ' final-template-head-pcs' : '');
           head.innerHTML = isPcsTemplate
-            ? '<span>Raw Material</span><span>Percentage</span><span>PCS QTY</span><span>Cost</span><span>Amount</span>'
-            : '<span>Raw Material</span><span>Percentage</span><span>LTR QTY</span><span>KG QTY</span><span>Cost</span><span>Amount</span>';
+            ? '<span>Raw Material</span><span>Percentage</span><span>PCS QTY</span><span>Amount</span><span></span>'
+            : '<span>Raw Material</span><span>Percentage</span><span>KG QTY</span><span>Amount</span><span></span>';
         }
         wrap.innerHTML = window.finalTemplateLines.map((l, i) => {
           const isPcs = l.unit === 'PCS';
@@ -10838,9 +11084,8 @@
             <input class="input" type="number" min="0" max="100" step="0.01" placeholder="Percentage" value="${l.percentage ?? ''}" oninput="finalTemplateLines.find(x=>x.key==='${l.key}').percentage=this.value;recalcFinalTemplateLine('${l.key}')">
             ${isPcs
               ? `<input class="input" id="final-tpl-pcsqty-${l.key}" type="number" min="0" step="0.01" value="${l.pcsQty ?? ''}" placeholder="PCS QTY" oninput="finalTemplateLines.find(x=>x.key==='${l.key}').pcsQty=this.value">`
-              : `<input class="input" id="final-tpl-ltrqty-${l.key}" type="number" min="0" step="0.01" value="${l.ltrQty ?? ''}" placeholder="LTR QTY" oninput="finalTemplateLines.find(x=>x.key==='${l.key}').ltrQty=this.value"><input class="input" id="final-tpl-kgqty-${l.key}" type="number" min="0" step="0.01" value="${l.kgQty ?? ''}" placeholder="KG QTY" oninput="finalTemplateLines.find(x=>x.key==='${l.key}').kgQty=this.value">`}
-            <input class="input" type="number" min="0" step="0.01" placeholder="Cost" value="${l.cost || ''}" oninput="finalTemplateLines.find(x=>x.key==='${l.key}').cost=this.value;recalcFinalTemplateLine('${l.key}')">
-            <input class="input input-readonly" id="final-tpl-amount-${l.key}" value="${((finalTemplateLineQtyForUnit(l) || 0) * (Number(l.cost) || 0)).toFixed(2)}" placeholder="Amount" readonly>
+              : `<input class="input input-readonly" id="final-tpl-kgqty-${l.key}" type="number" min="0" step="0.01" value="${l.kgQty ?? ''}" placeholder="KG QTY" readonly>`}
+            <input class="input" id="final-tpl-amount-${l.key}" type="number" min="0" step="0.01" placeholder="Amount" value="${l.amount ?? ''}" oninput="finalTemplateLines.find(x=>x.key==='${l.key}').amount=this.value">
             <span class="template-remove-cell"><span class="remove-line-btn" style="${window.finalTemplateLines.length === 1 ? 'visibility:hidden' : ''}" title="Remove raw material" onclick="removeFinalTemplateLine('${l.key}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></span></span>
           </div>`;
         }).join('');
@@ -10853,14 +11098,12 @@
       window.recalcFinalTemplateLine = function (key) {
         const l = finalTemplateLines.find(x => x.key === key); if (!l) return;
         recalcFinalTemplateLineQuantities(l);
-        const ltrEl = document.getElementById('final-tpl-ltrqty-' + key);
         const kgEl = document.getElementById('final-tpl-kgqty-' + key);
         const pcsEl = document.getElementById('final-tpl-pcsqty-' + key);
-        if (ltrEl) ltrEl.value = l.ltrQty || '';
         if (kgEl) kgEl.value = l.kgQty || '';
         if (pcsEl) pcsEl.value = l.pcsQty || '';
-        const amt = document.getElementById('final-tpl-amount-' + key);
-        if (amt) amt.value = ((finalTemplateLineQtyForUnit(l) || 0) * (Number(l.cost) || 0)).toFixed(2);
+        // Amount is an independent field now that Cost has been removed.
+        // Do not overwrite the user's amount when percentage/KG QTY changes.
       };
 
       window.onFinalTemplateLineChange = function (value, id) {
@@ -10892,7 +11135,7 @@
       };
 
       window.addFinalTemplateLine = function () {
-        finalTemplateLines.push({ key: uid(), itemId: '', percentage: '', unit: '', gravity: '', kgQty: '', ltrQty: '', pcsQty: '', cost: '', amount: '' });
+        finalTemplateLines.push({ key: uid(), itemId: '', percentage: '', unit: '', gravity: '', kgQty: '', ltrQty: '', pcsQty: '', amount: '' });
         renderFinalTemplateLines();
       };
       window.removeFinalTemplateLine = function (key) {
@@ -10907,28 +11150,30 @@
         document.getElementById('final-tpl-save').textContent = t ? 'Update' : 'Save';
         document.getElementById('final-tpl-type-wrap').innerHTML = `<div class="seg" id="final-tpl-type" style="width:100%"><div class="seg-opt ${(!t || t.templateType === 'Production') ? 'active' : ''}" data-v="Production" onclick="segSelect('final-tpl-type',this)">Production</div><div class="seg-opt ${(t?.templateType === 'Packaging') ? 'active' : ''}" data-v="Packaging" onclick="segSelect('final-tpl-type',this)">Packaging</div></div>`;
         document.getElementById('final-tpl-fg').innerHTML = comboHtml('final-tpl-fg-combo', 'Select finished good', templateFinishedOptions(), 'onFinalTemplateFinishedGoodChange', t?.itemId || '');
-        const outputUnit = t?.outputUnit || unitForItem(t?.itemId) || '';
+        /* Always use the Finished Good's current base unit.
+           Do not let an old saved template outputUnit override the
+           current Item Master unit (e.g. old LTR -> current KG). */
+        const outputUnit = unitForItem(t?.itemId) || t?.outputUnit || '';
         document.getElementById('final-tpl-unit-wrap').innerHTML = `<input class="input input-readonly" id="final-tpl-unit" value="${outputUnit}" readonly disabled/>`;
         const fg = DB.items.find(i => Number(i.id) === Number(t?.itemId));
         const oldKg = t?.outputKgQty ?? (outputUnit === 'KG' ? t?.outputQty : '');
-        const oldLtr = t?.outputLtrQty ?? (outputUnit === 'LTR' ? t?.outputQty : '');
         const oldPcs = t?.outputPcsQty ?? (outputUnit === 'PCS' ? t?.outputQty : '');
-        renderFinalTemplateOutputMetrics({ kg: oldKg, ltr: oldLtr, pcs: oldPcs });
+        renderFinalTemplateOutputMetrics({ kg: oldKg, pcs: oldPcs });
         finalTemplateLines = (t?.lines || []).map(l => {
           const item = DB.items.find(i => Number(i.id) === Number(l.itemId));
           const unit = l.baseUnit || l.unit || item?.baseUnit || unitForItem(l.itemId) || '';
           const gravity = Number(l.gravity || item?.gravity) || 1;
           let kgQty = l.kgQty ?? '';
-          let ltrQty = l.ltrQty ?? '';
-          if (!kgQty && l.qty != null) kgQty = unit === 'KG' ? l.qty : (unit === 'LTR' ? (Number(l.qty) * gravity).toFixed(2) : '');
-          if (!ltrQty && l.qty != null) ltrQty = unit === 'LTR' ? l.qty : (unit === 'KG' ? (Number(l.qty) / gravity).toFixed(2) : '');
+          if (!kgQty && l.qty != null) {
+            kgQty = unit === 'KG' ? l.qty : (unit === 'LTR' ? (Number(l.qty) * gravity).toFixed(2) : '');
+          }
           const pcsQty = l.pcsQty ?? (unit === 'PCS' ? l.qty : '');
-          const mainRef = outputUnit === 'KG' ? Number(oldKg) || 0 : outputUnit === 'LTR' ? Number(oldLtr) || 0 : Number(oldPcs) || 0;
-          const rawRef = outputUnit === 'KG' ? Number(kgQty) || 0 : outputUnit === 'LTR' ? Number(ltrQty) || 0 : Number(pcsQty) || 0;
+          const mainRef = outputUnit === 'PCS' ? Number(oldPcs) || 0 : Number(oldKg) || 0;
+          const rawRef = outputUnit === 'PCS' ? Number(pcsQty) || 0 : Number(kgQty) || 0;
           const percentage = l.percentage ?? (mainRef > 0 ? ((rawRef / mainRef) * 100).toFixed(2) : '');
-          return { key: uid(), itemId: l.itemId, percentage, unit, gravity, kgQty, ltrQty, pcsQty, cost: l.cost ?? l.price ?? '', amount: l.amount ?? '' };
+          return { key: uid(), itemId: l.itemId, percentage, unit, gravity, kgQty, ltrQty: '', pcsQty, amount: l.amount ?? '' };
         });
-        if (!finalTemplateLines.length) finalTemplateLines = [{ key: uid(), itemId: '', percentage: '', unit: '', gravity: '', kgQty: '', ltrQty: '', pcsQty: '', cost: '', amount: '' }];
+        if (!finalTemplateLines.length) finalTemplateLines = [{ key: uid(), itemId: '', percentage: '', unit: '', gravity: '', kgQty: '', ltrQty: '', pcsQty: '', amount: '' }];
         renderFinalTemplateLines();
         finalTemplateLines.forEach(l => recalcFinalTemplateLine(l.key));
         openModal('modal-final-template');
@@ -10937,25 +11182,29 @@
       window.submitFinalTemplate = function () {
         const type = segGetValue('final-tpl-type') || 'Production';
         const itemId = comboGetValue('final-tpl-fg-combo');
-        const outputUnit = finalTemplateOutputUnit();
+        const selectedFg = DB.items.find(i => Number(i.id) === Number(itemId));
+        /* The selected Finished Good is the source of truth for Unit. */
+        const outputUnit = selectedFg?.baseUnit || finalTemplateOutputUnit();
+        const unitEl = document.getElementById('final-tpl-unit');
+        if (unitEl) unitEl.value = outputUnit;
         const mainQty = finalTemplateMainReferenceQty();
         const valid = finalTemplateLines.filter(l => l.itemId && Number(l.percentage) > 0);
         if (!itemId || !outputUnit || mainQty <= 0 || !valid.length) { toast('Select finished good, unit, quantity and at least one raw material percentage', 'error'); return; }
         const lines = valid.map(l => {
           recalcFinalTemplateLineQuantities(l);
-          const qty = finalTemplateLineQtyForUnit(l);
+          const isPcs = l.unit === 'PCS';
+          const lineQty = isPcs ? Number(l.pcsQty) || 0 : Number(l.kgQty) || 0;
           return {
             itemId: Number(l.itemId),
-            qty,
+            qty: lineQty,
             percentage: Number(l.percentage) || 0,
-            baseUnit: l.unit || unitForItem(l.itemId),
+            /* Non-PCS template quantities are now explicitly KG. */
+            baseUnit: isPcs ? 'PCS' : 'KG',
             gravity: Number(l.gravity) || 0,
-            kgQty: Number(l.kgQty) || 0,
-            ltrQty: Number(l.ltrQty) || 0,
-            pcsQty: Number(l.pcsQty) || 0,
-            cost: Number(l.cost) || 0,
-            price: Number(l.cost) || 0,
-            amount: Number((qty * (Number(l.cost) || 0)).toFixed(2))
+            kgQty: isPcs ? 0 : lineQty,
+            ltrQty: 0,
+            pcsQty: isPcs ? lineQty : 0,
+            amount: Number(l.amount) || 0
           };
         });
         const old = finalTemplateEditId ? DB.templates.find(x => x.id === finalTemplateEditId) : null;
@@ -10964,9 +11213,9 @@
           itemName: itemLabel(itemId).split(' — ')[1] || '',
           outputQty: mainQty,
           outputUnit,
-          outputKgQty: outputUnit === 'KG' ? Number(document.getElementById('final-tpl-kgqty')?.value) || 0 : Number(document.getElementById('final-tpl-kgqty')?.value) || 0,
-          outputLtrQty: outputUnit === 'LTR' ? Number(document.getElementById('final-tpl-ltrqty')?.value) || 0 : Number(document.getElementById('final-tpl-ltrqty')?.value) || 0,
-          outputPcsQty: outputUnit === 'PCS' ? Number(document.getElementById('final-tpl-pcsqty')?.value) || 0 : 0,
+          outputKgQty: outputUnit === 'PCS' ? 0 : mainQty,
+          outputLtrQty: 0,
+          outputPcsQty: outputUnit === 'PCS' ? mainQty : 0,
           templateType: type,
           lines
         };
@@ -11002,14 +11251,62 @@
       function inwardItemOptions(kind) {
         return DB.items.filter(i => kind === 'PACKAGING' ? Number(i.itemCategoryId) === 4 : [1, 2].includes(Number(i.itemCategoryId))).map(i => ({ value: i.id, label: i.itemCode + ' — ' + i.itemName, sub: i.baseUnit || '' }));
       }
-      function freshFinalInwardLine() { return { key: uid(), itemId: '', qty: '', ltrQty: '', kgQty: '', pcsQty: '' }; }
+      function freshFinalInwardLine() {
+        return { key: uid(), itemId: '', qty: '', ltrQty: '', kgQty: '', pcsQty: '', packedSize: '', nos: '', total: '' };
+      }
+
+      function packagingPackSizeValue(item) {
+        if (!item) return 0;
+        const configured = Number(item.packSize);
+        if (configured > 0) return configured;
+        const match = String(item.itemName || '').match(/(\d+(?:\.\d+)?)\s*(?:L|KG)/i);
+        return match ? Number(match[1]) : 0;
+      }
+
+      function packagingPackSizeUnit(item) {
+        if (!item) return '';
+        const match = String(item.itemName || '').match(/\d+(?:\.\d+)?\s*(L|KG)\b/i);
+        return match ? match[1].toUpperCase() : '';
+      }
+
+      window.updateFinalInwardPackagingTotal = function (key, value, field) {
+        const line = finalInwardLines.find(x => x.key === key);
+        if (!line) return;
+
+        if (field === 'packedSize') line.packedSize = value;
+        if (field === 'nos') {
+          line.nos = value;
+          line.qty = value;
+        }
+        if (field === 'total') {
+          line.total = value;
+          line.qty = finalInwardKind === 'CHEMICAL' ? value : line.qty;
+          return;
+        }
+
+        const packSize = Number(line.packedSize) || 0;
+        const nos = Number(line.nos) || 0;
+        line.total = (packSize > 0 && nos > 0) ? (packSize * nos).toFixed(2) : '';
+
+        const totalEl = document.getElementById('final-inw-total-' + key);
+        if (totalEl) totalEl.value = line.total;
+      }
+
       function finalInwardLineMetricHtml(l) {
         const it = l.itemId ? DB.items.find(i => Number(i.id) === Number(l.itemId)) : null;
-        const unit = it?.baseUnit || unitForItem(l.itemId) || '';
-        if (unit === 'PCS') {
-          return `<div class="field"><label class="field-label">PCS QTY</label><input class="input" type="number" min="0" step="0.01" value="${l.pcsQty ?? l.qty ?? ''}" oninput="finalInwardLines.find(x=>x.key==='${l.key}').pcsQty=this.value;finalInwardLines.find(x=>x.key==='${l.key}').qty=this.value"></div>`;
-        }
-        return `<div class="field"><label class="field-label">LTR QTY</label><input class="input" type="number" min="0" step="0.01" value="${l.ltrQty ?? ''}" oninput="finalInwardLines.find(x=>x.key==='${l.key}').ltrQty=this.value"></div><div class="field"><label class="field-label">KG QTY</label><input class="input" type="number" min="0" step="0.01" value="${l.kgQty ?? ''}" oninput="finalInwardLines.find(x=>x.key==='${l.key}').kgQty=this.value"></div>`;
+        const packSize = Number(l.packedSize ?? packagingPackSizeValue(it)) || 0;
+        const packUnit = packagingPackSizeUnit(it) || (finalInwardKind === 'CHEMICAL' ? 'KG' : '');
+        const total = (packSize > 0 && Number(l.nos) > 0) ? (packSize * Number(l.nos)).toFixed(2) : '';
+        const packSizeValue = packSize || '';
+        const nosValue = l.nos ?? '';
+
+        return `<div class="field"><label class="field-label">Packed Size</label>
+            <div style="position:relative"><input class="input" type="number" min="0" step="0.01" value="${packSizeValue}" oninput="updateFinalInwardPackagingTotal('${l.key}', this.value, 'packedSize')">
+            ${packUnit ? `<span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:700;color:#64748b">${packUnit}</span>` : ''}</div></div>
+            <div class="final-inw-calc-operator" aria-hidden="true">×</div>
+            <div class="field"><label class="field-label">NOS</label><input class="input" type="number" min="0" step="1" value="${nosValue}" oninput="updateFinalInwardPackagingTotal('${l.key}', this.value, 'nos')"></div>
+            <div class="final-inw-calc-operator" aria-hidden="true">=</div>
+            <div class="field"><label class="field-label">Total</label><input class="input final-inw-total-input" id="final-inw-total-${l.key}" type="number" min="0" step="0.01" value="${total}" readonly></div>`;
       }
       function renderFinalInwardLines() {
         const w = document.getElementById('final-inw-lines');
@@ -11024,9 +11321,7 @@
   </div>
 
   ${finalInwardLines.map((l, i) => {
-    const it = l.itemId ? DB.items.find(x => Number(x.id) === Number(l.itemId)) : null;
-    const unit = it?.baseUnit || unitForItem(l.itemId) || '';
-    const metricClass = unit === 'PCS' ? 'final-inw-pcs-grid' : 'final-inw-metric-grid';
+    const metricClass = finalInwardKind === 'PACKAGING' ? 'final-inw-packaging-grid' : 'final-inw-chemical-grid';
     return `
     <div class="item-line">
       <div class="item-line-head">
@@ -11054,12 +11349,17 @@
         if (!l) return;
         l.itemId = v;
         const it = DB.items.find(x => Number(x.id) === Number(v));
-        const unit = it?.baseUnit || unitForItem(v) || '';
         l.qty = '';
         l.ltrQty = '';
         l.kgQty = '';
         l.pcsQty = '';
-        if (unit === 'PCS') l.pcsQty = '';
+        l.packedSize = '';
+        l.nos = '';
+        l.total = '';
+
+        if (finalInwardKind === 'PACKAGING') {
+          l.packedSize = packagingPackSizeValue(it) || '';
+        }
         renderFinalInwardLines();
       };
       window.addFinalInwardLine = function () { finalInwardLines.push(freshFinalInwardLine()); renderFinalInwardLines(); };
@@ -11080,9 +11380,12 @@
           key: uid(),
           itemId: x.itemId,
           qty: x.qty,
-          ltrQty: x.ltrQty ?? (x.unit === 'LTR' ? x.qty : ''),
+          ltrQty: '',
           kgQty: x.kgQty ?? (x.unit === 'KG' ? x.qty : ''),
-          pcsQty: x.pcsQty ?? (x.unit === 'PCS' ? x.qty : '')
+          pcsQty: x.pcsQty ?? (x.unit === 'PCS' ? x.qty : ''),
+          packedSize: x.packedSize ?? packagingPackSizeValue(DB.items.find(i => Number(i.id) === Number(x.itemId))),
+          nos: x.nos ?? (kind === 'CHEMICAL' ? ((Number(x.qty) || 0) / (Number(x.packedSize ?? packagingPackSizeValue(DB.items.find(i => Number(i.id) === Number(x.itemId)))) || 1)) : (x.qty ?? '')),
+          total: x.total ?? (kind === 'CHEMICAL' ? (Number(x.kgQty ?? x.qty) || 0).toFixed(2) : ((Number(x.packedSize ?? packagingPackSizeValue(DB.items.find(i => Number(i.id) === Number(x.itemId)))) || 0) * (Number(x.nos ?? x.qty) || 0)).toFixed(2))
         })) || [];
         if (!finalInwardLines.length) finalInwardLines = [freshFinalInwardLine()];
         renderFinalInwardLines(); openModal('modal-final-inward');
@@ -11100,22 +11403,31 @@
             const it = DB.items.find(i => i.id == x.itemId) || {};
             const unit = it.baseUnit || '';
             const gravity = Number(it.gravity) || 0;
-            const ltrQty = unit === 'PCS' ? 0 : Number(x.ltrQty) || 0;
-            const kgQty = unit === 'PCS' ? 0 : Number(x.kgQty) || 0;
-            const pcsQty = unit === 'PCS' ? Number(x.pcsQty ?? x.qty) || 0 : 0;
-            const qty = unit === 'PCS' ? pcsQty : (unit === 'LTR' ? ltrQty : kgQty);
+            const isPackaging = finalInwardKind === 'PACKAGING';
+            const ltrQty = 0;
+            const packedSize = Number(x.packedSize ?? packagingPackSizeValue(it)) || 0;
+            const nos = Number(x.nos ?? x.qty) || 0;
+            const calculatedTotal = packedSize * nos;
+            const total = calculatedTotal > 0 ? calculatedTotal : (Number(x.total) || 0);
+            const kgQty = isPackaging ? 0 : total;
+            const pcsQty = isPackaging ? nos : 0;
+            const qty = isPackaging ? pcsQty : kgQty;
 
             return {
               itemId: Number(x.itemId),
               itemName: it.itemName || itemLabel(x.itemId),
               itemCode: it.itemCode || '',
+              itemCategoryId: Number(it.itemCategoryId) || 0,
               qty,
-              unit,
-              baseUnit: unit,
-              gravity,
+              unit: isPackaging ? 'PCS' : 'KG',
+              baseUnit: isPackaging ? 'PCS' : 'KG',
+              gravity: isPackaging ? 0 : gravity,
               ltrQty,
               kgQty,
-              pcsQty
+              pcsQty,
+              packedSize,
+              nos,
+              total
             };
           });
 
@@ -11180,11 +11492,9 @@
         const page = paginateRows(rows, 'inward-' + kind.toLowerCase());
         const qtyHtml = i => {
           const qty = Number(i.qty || 0);
-          const ltrQty = Number(i.ltrQty ?? (i.unit === 'LTR' ? qty : 0));
-          const kgQty = Number(i.kgQty ?? (i.unit === 'KG' ? qty : 0));
           return kind === 'PACKAGING'
             ? `<div class="qty-stack"><div><b>PCS</b><span>${qty.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span></div></div>`
-            : `<div class="qty-stack"><div><b>LTR</b><span>${ltrQty.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span></div><div><b>KG</b><span>${kgQty.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span></div></div>`;
+            : `<div class="qty-stack"><div><b>KG</b><span>${Number(i.total ?? i.kgQty ?? qty).toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span></div></div>`;
         };
         w.innerHTML = rows.length ? `<table class="dt"><thead><tr><th>Inward No</th><th>Inward Date</th><th>Vendor</th><th>Item(s)</th><th>QTY</th><th>Status</th><th style="text-align:right">Action</th></tr></thead><tbody>${page.map(r => `<tr><td class="cell-strong">${r.docNo || '—'}</td><td>${fmtDate(r.docDate)}</td><td>${vendorLabel(r.vendorId)}</td><td>${(r.items || []).map(i => `<div class="cell-strong">${i.itemCode ? i.itemCode + ' — ' : ''}${i.itemName || itemLabel(i.itemId)}</div>`).join('') || '—'}</td><td>${(r.items || []).map(qtyHtml).join('') || '—'}</td><td>${statusBadge(inwardDisplayStatus(r.status))}</td><td class="row-actions">${iconAction(ICON_EDIT, 'Edit', `openFinalInwardModal('${kind}',${r.id})`)}</td></tr>`).join('')}</tbody></table>` : emptyState('No inward records found', 'Add a new inward entry to get started.');
         if (p) p.innerHTML = pagerHtml(rows.length, 'inward-' + kind.toLowerCase(), 'renderFinalInwardTable');
@@ -11301,20 +11611,76 @@
       let dispatchReturnId = null;
 
       /* Store records are immediately available for dispatch. */
+      function storeDispatchCustomerOptions() {
+        return DB.customers
+          .filter(c => (c.status || 'Active') === 'Active')
+          .map(c => ({ value: c.id, label: c.name, sub: c.code || '' }));
+      }
+
+      function storeDispatchSubCustomerOptions(customerId) {
+        return DB.subCustomers
+          .filter(sc => Number(sc.customerId) === Number(customerId) && (sc.status || 'Active') === 'Active')
+          .map(sc => ({ value: sc.id, label: sc.name, sub: sc.contact || '' }));
+      }
+
+      function renderStoreDispatchSubCustomerOptions(customerId, selectedValue) {
+        const wrap = document.getElementById('store-dispatch-subcustomer-wrap');
+        if (!wrap) return;
+
+        const options = customerId ? storeDispatchSubCustomerOptions(customerId) : [];
+        wrap.classList.toggle('dispatch-subcustomer-disabled', !customerId);
+        wrap.innerHTML = comboHtml(
+          'store-dispatch-subcustomer',
+          customerId ? (options.length ? 'Select sub customer' : 'No sub customers') : 'Select customer first',
+          options,
+          null,
+          selectedValue || ''
+        );
+
+        const combo = document.getElementById('store-dispatch-subcustomer');
+        if (combo && !customerId) combo.style.pointerEvents = 'none';
+      }
+
+      window.onStoreDispatchCustomerChange = function (value) {
+        renderStoreDispatchSubCustomerOptions(value, '');
+      };
+
       window.openStoreDispatchModal = function (id) {
         storeDispatchId = id;
         const s = DB.stages.find(x => x.id === id);
         if (!s) return;
+
         const fg = DB.items.find(i => Number(i.id) === Number(s.finishedGoodId));
         const name = fg?.itemName || s.finishedGoodName || itemLabel(s.items?.[0]?.itemId) || 'Store item';
         const qty = Number(s.mainQty || s.items?.reduce((a, i) => a + Number(i.qty || 0), 0) || 0);
         const unit = fg?.baseUnit || s.items?.[0]?.unit || '';
         const info = document.getElementById('store-dispatch-info');
-        const customer = document.getElementById('store-dispatch-customer');
         const qtyInput = document.getElementById('store-dispatch-qty');
         const dateInput = document.getElementById('store-dispatch-date');
+
         if (info) info.innerHTML = `<div class="kv-grid" style="margin-bottom:0"><div class="kv-item"><div class="kv-label">Item</div><div class="kv-value">${name}</div></div><div class="kv-item"><div class="kv-label">Batch</div><div class="kv-value">${s.batchNo || s.docNo || '—'}</div></div><div class="kv-item"><div class="kv-label">Available QTY</div><div class="kv-value">${qty.toLocaleString('en-IN', { maximumFractionDigits: 2 })} ${unit}</div></div></div>`;
-        if (customer) customer.value = s.dispatchCustomer || '';
+
+        const customerId = s.dispatchCustomerId
+          ? Number(s.dispatchCustomerId)
+          : Number(DB.customers.find(c => c.name === s.dispatchCustomer)?.id || '');
+
+        const subCustomerId = s.dispatchSubCustomerId
+          ? Number(s.dispatchSubCustomerId)
+          : Number(DB.subCustomers.find(sc => sc.name === s.dispatchSubCustomer)?.id || '');
+
+        const customerWrap = document.getElementById('store-dispatch-customer-wrap');
+        if (customerWrap) {
+          customerWrap.innerHTML = comboHtml(
+            'store-dispatch-customer',
+            'Select customer',
+            storeDispatchCustomerOptions(),
+            'onStoreDispatchCustomerChange',
+            customerId || ''
+          );
+        }
+
+        renderStoreDispatchSubCustomerOptions(customerId || '', subCustomerId || '');
+
         if (qtyInput) qtyInput.value = s.dispatchQty ?? qty;
         if (dateInput) dateInput.value = s.dispatchDate || todayIso();
         openModal('modal-store-dispatch');
@@ -11323,22 +11689,39 @@
       window.confirmStoreDispatch = function () {
         const s = DB.stages.find(x => x.id === storeDispatchId);
         if (!s) return;
-        const customer = document.getElementById('store-dispatch-customer')?.value.trim() || '';
+
+        const customerId = comboGetValue('store-dispatch-customer');
+        const subCustomerId = comboGetValue('store-dispatch-subcustomer');
+        const customer = DB.customers.find(c => Number(c.id) === Number(customerId));
+        const subCustomer = subCustomerId
+          ? DB.subCustomers.find(sc => Number(sc.id) === Number(subCustomerId) && Number(sc.customerId) === Number(customerId))
+          : null;
         const qty = Number(document.getElementById('store-dispatch-qty')?.value) || 0;
         const date = document.getElementById('store-dispatch-date')?.value || '';
-        if (!customer || qty <= 0 || !date) {
-          toast('Customer name, QTY and Date are required', 'error');
+
+        if (!customerId || !customer || qty <= 0 || !date) {
+          toast('Customer, QTY and Date are required', 'error');
           return;
         }
+
+        if (subCustomerId && !subCustomer) {
+          toast('Please select a valid sub customer', 'error');
+          return;
+        }
+
         s.status = 'Dispatched';
         /* Keep the record in Store; only its status changes. */
         s.currentDept = 'STORE';
         s.dispatchNo = s.dispatchNo || ('DSP-' + String(100 + Number(s.id || 0)).slice(-3));
         s.dispatchDate = date;
-        s.dispatchCustomer = customer;
+        s.dispatchCustomerId = Number(customer.id);
+        s.dispatchCustomer = customer.name;
+        s.dispatchSubCustomerId = subCustomer ? Number(subCustomer.id) : null;
+        s.dispatchSubCustomer = subCustomer ? subCustomer.name : '';
         s.dispatchQty = qty;
+
         closeModal('modal-store-dispatch');
-        toast('Item dispatched');
+        toast(subCustomer ? 'Item dispatched to customer and sub customer' : 'Item dispatched');
         if (typeof window.checkLowStockAlerts === 'function') window.checkLowStockAlerts();
         renderFinalStoreTable();
         if (CURRENT_ROUTE === 'dispatch' && typeof renderDispatchTable === 'function') renderDispatchTable();
@@ -11444,9 +11827,22 @@
             <div class="modal-body">
               <div id="store-dispatch-info"></div>
               <div class="form-grid dispatch-form-grid" style="margin-top:16px">
-                <div class="field"><label class="field-label">Customer Name</label><input class="input" id="store-dispatch-customer" placeholder="Enter customer name" /></div>
-                <div class="field"><label class="field-label">QTY</label><input class="input" id="store-dispatch-qty" type="number" min="0" step="any" placeholder="Enter quantity" /></div>
-                <div class="field"><label class="field-label">Date</label><input class="input" id="store-dispatch-date" type="date" /></div>
+                <div class="field">
+                  <label class="field-label">Customer Name</label>
+                  <div id="store-dispatch-customer-wrap"></div>
+                </div>
+                <div class="field">
+                  <label class="field-label">Sub Customer <span class="opt">(optional)</span></label>
+                  <div id="store-dispatch-subcustomer-wrap" class="dispatch-subcustomer-disabled"></div>
+                </div>
+                <div class="field">
+                  <label class="field-label">QTY</label>
+                  <input class="input" id="store-dispatch-qty" type="number" min="0" step="any" placeholder="Enter quantity" />
+                </div>
+                <div class="field">
+                  <label class="field-label">Date</label>
+                  <input class="input" id="store-dispatch-date" type="date" />
+                </div>
               </div>
             </div>
             <div class="modal-foot">
@@ -11491,13 +11887,13 @@
 
         const rows = realRows.concat(DEMO_DISPATCHES);
         const page = paginateRows(rows, 'dispatch');
-        wrap.innerHTML = rows.length ? `<table class="dt"><thead><tr><th>Dispatch No.</th><th>Customer</th><th>Item</th><th>QTY</th><th>Date</th><th>Status</th><th style="text-align:right">Action</th></tr></thead><tbody>${page.map(r => {
+        wrap.innerHTML = rows.length ? `<table class="dt dispatch-table"><thead><tr><th>Dispatch No.</th><th>Customer</th><th>Item</th><th>QTY</th><th>Date</th><th>Status</th><th class="action-col">Action</th></tr></thead><tbody>${page.map(r => {
           const action = r.status !== 'Dispatch Return'
             ? (r.real
               ? iconAction(ICON_TAKE, 'Dispatch Return', `openDispatchReturnModal(${r.id},false)`, 'take')
               : iconAction(ICON_TAKE, 'Dispatch Return', `openDispatchReturnModal('${r.id}',true)`, 'take'))
             : '';
-          return `<tr><td class="cell-strong">${r.dispatchNo}</td><td>${r.customer}</td><td>${r.item}</td><td class="num">${r.qty}</td><td class="cell-sub">${fmtDate(r.date)}</td><td>${statusBadge(r.status)}</td><td class="row-actions">${action}</td></tr>`;
+          return `<tr><td class="cell-strong">${r.dispatchNo}</td><td>${r.customer}</td><td>${r.item}</td><td class="num">${r.qty}</td><td class="cell-sub">${fmtDate(r.date)}</td><td>${statusBadge(r.status)}</td><td class="row-actions action-col">${action}</td></tr>`;
         }).join('')}</tbody></table>` : emptyState('No dispatch records found', 'Dispatched store records will appear here.');
         if (pager) pager.innerHTML = pagerHtml(rows.length, 'dispatch', 'renderDispatchTable');
       }
@@ -11611,7 +12007,7 @@
               (s.currentDept === 'QC_LAB' || s.currentDept === 'QC_MANAGER')
             )
             : DB.inwards.filter(r =>
-              r.currentDept === 'QC_LAB' || r.currentDept === 'QC_MANAGER'
+              r.currentDept === 'QC_LAB'
             );
 
           const q = String(qcSearch || '').trim().toLowerCase();
@@ -12025,61 +12421,99 @@
           const w = document.getElementById('separate-stock-wrap'); if (w) w.innerHTML = fixedScrapReport();
         }
 
+        /* Stock report helpers: reports show only the requested stock quantity and used quantity. */
+        function reportUsedQty(itemId, kind) {
+          const stages = DB.stages || [];
+          return Number(stages
+            .filter(s => s.kind === kind && s.status !== 'Rejected' && Array.isArray(s.items))
+            .reduce((total, s) => total + s.items
+              .filter(i => Number(i.itemId) === Number(itemId))
+              .reduce((sum, i) => sum + Number(i.qty || 0), 0), 0)
+            .toFixed(2));
+        }
+
+        /* ---------- Stock reports: simplified stock / used views ---------- */
+        function fixedChemicalDemoStock(itemId) {
+          const demo = { 1: 1290, 2: 640, 3: 980, 4: 410, 5: 775, 11: 345 };
+          return Number(demo[Number(itemId)] || (Number(itemId) * 125 + 95));
+        }
+
+        function fixedChemicalDemoUsed(itemId) {
+          const demo = { 1: 310, 2: 160, 3: 390, 4: 95, 5: 150, 11: 85 };
+          return Number(demo[Number(itemId)] || (Number(itemId) * 25 + 60));
+        }
+
+        function fixedPackagingDemoStock(itemId) {
+          const demo = { 9: 300, 10: 150 };
+          return Number(demo[Number(itemId)] || (Number(itemId) * 30 + 30));
+        }
+
+        function fixedPackagingDemoUsed(itemId) {
+          const demo = { 9: 120, 10: 75 };
+          return Number(demo[Number(itemId)] || (Number(itemId) * 12 + 20));
+        }
+
         function fixedChemicalReport() {
-          const allRows = DB.items.filter(i => i.baseUnit === 'KG' || i.baseUnit === 'LTR');
-          const depts = [
-            ['raw', 'Raw Material', 'stock-dept-raw'],
-            ['production', 'Production', 'stock-dept-production'],
-            ['qcFailed', 'QC', 'stock-dept-qc'],
-            ['packaging', 'Packaging', 'stock-dept-packaging'],
-            ['store', 'Store', 'stock-dept-store'],
-            ['dispatch', 'Dispatch', 'stock-dept-dispatch']
-          ];
+          /* Chemical report: Raw Material only, KG only. */
+          const allRows = DB.items.filter(i => Number(i.itemCategoryId) === 1);
           const rows = allRows.filter(it => {
             if (!stockSearchMatch(it, chemicalStockSearch)) return false;
-            let kgTotal = 0, ltrTotal = 0;
-            depts.forEach(([key]) => {
-              kgTotal += Number(window.stockReportQty(key, it.id, 'KG') || 0);
-              ltrTotal += Number(window.stockReportQty(key, it.id, 'LTR') || 0);
-            });
-            const stockValue = it.baseUnit === 'LTR' ? ltrTotal : kgTotal;
-            return stockRangeMatch(stockValue, chemicalStockMin, chemicalStockMax);
+            const actual = Number(window.stockReportQty('raw', it.id, 'KG') || 0);
+            const stock = actual > 0 ? actual : fixedChemicalDemoStock(it.id);
+            return stockRangeMatch(stock, chemicalStockMin, chemicalStockMax);
           });
+
           const body = rows.map(it => {
-            let kgTotal = 0, ltrTotal = 0;
-            const cells = depts.map(([key, , cls]) => {
-              const kg = window.stockReportQty(key, it.id, 'KG');
-              const ltr = window.stockReportQty(key, it.id, 'LTR');
-              kgTotal += kg; ltrTotal += ltr;
-              return `<td class="dept-group stock-value ${cls}">${fixedReportCell(kg)}</td><td class="dept-end stock-value ${cls}">${fixedReportCell(ltr)}</td>`;
-            }).join('');
-            return `<tr><td class="sticky-item"><div class="stock-item"><span class="stock-code">${it.itemCode}</span><b>${it.itemName}</b></div></td>${cells}<td class="dept-group total-col stock-value stock-positive">${fixedReportCell(kgTotal)}</td><td class="dept-end total-col stock-value stock-positive">${fixedReportCell(ltrTotal)}</td></tr>`;
+            const actualStock = Number(window.stockReportQty('raw', it.id, 'KG') || 0);
+            const stock = actualStock > 0 ? actualStock : fixedChemicalDemoStock(it.id);
+            const actualUsed = reportUsedQty(it.id, 'PRODUCTION');
+            const used = actualUsed > 0 ? actualUsed : fixedChemicalDemoUsed(it.id);
+            return `<tr>
+              <td class="sticky-item"><div class="stock-item"><span class="stock-code">${it.itemCode}</span><b>${it.itemName}</b></div></td>
+              <td class="dept-group stock-value stock-dept-raw stock-positive">${fixedReportCell(stock)}</td>
+              <td class="dept-group stock-value stock-dept-production">${fixedReportCell(used)}</td>
+            </tr>`;
           }).join('');
+
           return `<div class="stock-report-area">
-      <div class="report-summary-row"><div><b>Chemical Stock Report</b><small class="stock-filter-note">Search and filter by the item's base-unit stock.</small></div><span class="report-pill">KG / LTR</span></div>
+      <div class="report-summary-row"><div><b>Chemical Stock Report</b><small class="stock-filter-note">Search and filter by the raw material's KG stock.</small></div><span class="report-pill">KG</span></div>
       ${stockFilterControls('chemical', chemicalStockSearch, chemicalStockMin, chemicalStockMax)}
-      <div class="tbl-wrap stock-matrix-wrap"><table class="dt stock-report-table premium-stock-table"><thead>
-        <tr><th class="sticky-item" rowspan="2">Item</th>${depts.map(([, label, cls]) => `<th colspan="2" class="dept-group ${cls}">${label}</th>`).join('')}<th colspan="2" class="dept-group total-col stock-total-head">Total</th></tr>
-        <tr>${depts.map(([, , cls]) => `<th class="dept-group unit-head ${cls}">KG</th><th class="dept-end unit-head ${cls}">LTR</th>`).join('')}<th class="dept-group total-col unit-head stock-total-head">KG</th><th class="dept-end total-col unit-head stock-total-head">LTR</th></tr>
-      </thead><tbody>${body || `<tr><td colspan="15">${emptyState('No stock items found', 'Try a different item search or stock range.')}</td></tr>`}</tbody></table></div>
+      <div class="tbl-wrap stock-matrix-wrap"><table class="dt stock-report-table premium-stock-table">
+        <thead><tr><th class="sticky-item">Item</th><th colspan="2" class="dept-group stock-dept-raw">RAW MATERIAL</th></tr>
+        <tr><th class="sticky-item"></th><th class="dept-group stock-dept-raw">Stock (KG)</th><th class="dept-group stock-dept-production">Used (KG)</th></tr></thead>
+        <tbody>${body || `<tr><td colspan="3">${emptyState('No stock items found', 'Try a different item search or stock range.')}</td></tr>`}</tbody>
+      </table></div>
     </div>`;
         }
 
         function fixedPackagingReport() {
-          const allRows = DB.items.filter(i => Number(i.itemCategoryId) === 4 && i.baseUnit === 'PCS');
+          /* Packaging report: KG only, with stock and used quantities. */
+          const allRows = DB.items.filter(i => Number(i.itemCategoryId) === 4);
           const rows = allRows.filter(it => {
             if (!stockSearchMatch(it, packagingStockSearch)) return false;
-            const packaging = window.stockReportQty('packaging', it.id, 'PCS') || (Number(it.id) * 23 % 67 + 12);
-            return stockRangeMatch(packaging, packagingStockMin, packagingStockMax);
+            const stock = fixedPackagingDemoStock(it.id);
+            return stockRangeMatch(stock, packagingStockMin, packagingStockMax);
           });
+
           const body = rows.map(it => {
-            const packaging = window.stockReportQty('packaging', it.id, 'PCS') || (Number(it.id) * 23 % 67 + 12);
-            return `<tr><td class="sticky-item"><div class="stock-item"><span class="stock-code">${it.itemCode}</span><b>${it.itemName}</b></div></td><td class="dept-group stock-value stock-dept-packaging stock-positive">${fixedReportCell(packaging)}</td></tr>`;
+            const stock = fixedPackagingDemoStock(it.id);
+            const actualUsed = reportUsedQty(it.id, 'PACKAGING');
+            const used = actualUsed > 0 ? actualUsed : fixedPackagingDemoUsed(it.id);
+            return `<tr>
+              <td class="sticky-item"><div class="stock-item"><span class="stock-code">${it.itemCode}</span><b>${it.itemName}</b></div></td>
+              <td class="dept-group stock-value stock-dept-packaging stock-positive">${fixedReportCell(stock)}</td>
+              <td class="dept-group stock-value stock-dept-production">${fixedReportCell(used)}</td>
+            </tr>`;
           }).join('');
+
           return `<div class="stock-report-area">
-      <div class="report-summary-row"><div><b>Packaging Stock Report</b><small class="stock-filter-note">Stock quantity is shown in PCS.</small></div><span class="report-pill">PCS</span></div>
+      <div class="report-summary-row"><div><b>Packaging Stock Report</b><small class="stock-filter-note">Stock and used quantity is shown in KG.</small></div><span class="report-pill">KG</span></div>
       ${stockFilterControls('packaging', packagingStockSearch, packagingStockMin, packagingStockMax)}
-      <div class="tbl-wrap stock-matrix-wrap"><table class="dt stock-report-table premium-stock-table packaging-stock-table"><thead><tr><th class="sticky-item">Item</th><th class="dept-group stock-dept-packaging">Packaging QTY</th></tr></thead><tbody>${body || `<tr><td colspan="2">${emptyState('No packaging stock items found', 'Try a different item search or stock range.')}</td></tr>`}</tbody></table></div>
+      <div class="tbl-wrap stock-matrix-wrap"><table class="dt stock-report-table premium-stock-table packaging-stock-table">
+        <thead><tr><th class="sticky-item">Item</th><th colspan="2" class="dept-group stock-dept-packaging">PACKAGING</th></tr>
+        <tr><th class="sticky-item"></th><th class="dept-group stock-dept-packaging">Stock (KG)</th><th class="dept-group stock-dept-production">Used (KG)</th></tr></thead>
+        <tbody>${body || `<tr><td colspan="3">${emptyState('No packaging stock items found', 'Try a different item search or stock range.')}</td></tr>`}</tbody>
+      </table></div>
     </div>`;
         }
 
@@ -12091,16 +12525,45 @@
         }
 
         const FIXED_SCRAP_REFERENCE = [
-          { itemId: 1, type: 'Dispatch return scrap', kg: 11, ltr: 0 },
-          { itemId: 2, type: 'Dispatch return scrap', kg: 0, ltr: 8 },
-          { itemId: 5, type: 'Production rejection scrap', kg: 14, ltr: 0 },
-          { itemId: 6, type: 'Production rejection scrap', kg: 0, ltr: 18 },
-          { itemId: 8, type: 'QC sample scrap', kg: 22, ltr: 0 }
+          { itemId: 1, type: 'Dispatch return scrap', kg: 11 },
+          { itemId: 2, type: 'Dispatch return scrap', kg: 8 },
+          { itemId: 5, type: 'Production rejection scrap', kg: 14 },
+          { itemId: 6, type: 'Production rejection scrap', kg: 18 },
+          { itemId: 8, type: 'QC sample scrap', kg: 22 }
         ];
 
-        function fixedScrapValue(itemId, type, unit, fallback) {
+        function fixedScrapDemoStock(itemId, type) {
+          const map = {
+            '1|Dispatch return scrap': 11,
+            '2|Dispatch return scrap': 8,
+            '5|Production rejection scrap': 14,
+            '6|Production rejection scrap': 18,
+            '8|QC sample scrap': 22
+          };
+          return Number(map[Number(itemId) + '|' + type] || (Number(itemId) * 3 + 7));
+        }
+
+        function fixedScrapDemoUsed(itemId, type) {
+          const map = {
+            '1|Dispatch return scrap': 4,
+            '2|Dispatch return scrap': 3,
+            '5|Production rejection scrap': 6,
+            '6|Production rejection scrap': 7,
+            '8|QC sample scrap': 9
+          };
+          return Number(map[Number(itemId) + '|' + type] || (Number(itemId) + 3));
+        }
+
+        function fixedScrapValue(itemId, type, fallback) {
           const actual = (DB.stock.scrap || [])
-            .filter(r => Number(r.itemId) === Number(itemId) && fixedScrapMatch(type, r.reason) && String(r.unit || '').toUpperCase() === unit)
+            .filter(r => Number(r.itemId) === Number(itemId) && fixedScrapMatch(type, r.reason) && String(r.unit || '').toUpperCase() === 'KG')
+            .reduce((sum, r) => sum + Number(r.qty || 0), 0);
+          return actual > 0 ? actual : fallback;
+        }
+
+        function fixedScrapUsedValue(itemId, type, fallback) {
+          const actual = (DB.stock.scrapUsed || [])
+            .filter(r => Number(r.itemId) === Number(itemId) && fixedScrapMatch(type, r.reason) && String(r.unit || '').toUpperCase() === 'KG')
             .reduce((sum, r) => sum + Number(r.qty || 0), 0);
           return actual > 0 ? actual : fallback;
         }
@@ -12109,39 +12572,33 @@
           const allRows = FIXED_SCRAP_REFERENCE.map(r => DB.items.find(i => Number(i.id) === Number(r.itemId))).filter(Boolean);
           const rows = allRows.filter(it => {
             if (!stockSearchMatch(it, scrapStockSearch)) return false;
-            let kgTotal = 0, ltrTotal = 0;
+            let kgTotal = 0;
             FIXED_SCRAP_DEPARTMENTS.forEach(([type]) => {
-              kgTotal += Number(fixedScrapValue(it.id, type, 'KG', 0) || 0);
-              ltrTotal += Number(fixedScrapValue(it.id, type, 'LTR', 0) || 0);
+              kgTotal += fixedScrapValue(it.id, type, fixedScrapDemoStock(it.id, type));
             });
-            const stockValue = String(it.baseUnit || '').toUpperCase() === 'LTR' ? ltrTotal : kgTotal;
-            return stockRangeMatch(stockValue, scrapStockMin, scrapStockMax);
+            return stockRangeMatch(kgTotal, scrapStockMin, scrapStockMax);
           });
+
           const body = rows.map(it => {
-            let kgTotal = 0, ltrTotal = 0;
-            const cells = FIXED_SCRAP_DEPARTMENTS.map(([type, , cls]) => {
-              const ref = FIXED_SCRAP_REFERENCE.find(r => Number(r.itemId) === Number(it.id) && r.type === type);
-              const kg = fixedScrapValue(it.id, type, 'KG', ref ? ref.kg : 0);
-              const ltr = fixedScrapValue(it.id, type, 'LTR', ref ? ref.ltr : 0);
-              kgTotal += kg;
-              ltrTotal += ltr;
-              return `<td class="dept-group stock-value ${cls}">${fixedReportCell(kg)}</td><td class="dept-end stock-value ${cls}">${fixedReportCell(ltr)}</td>`;
+            const cells = FIXED_SCRAP_DEPARTMENTS.map(([type, label, cls]) => {
+              const stock = fixedScrapValue(it.id, type, fixedScrapDemoStock(it.id, type));
+              const used = fixedScrapUsedValue(it.id, type, fixedScrapDemoUsed(it.id, type));
+              return `<td class="dept-group stock-value ${cls}">${fixedReportCell(stock)}</td>
+                      <td class="dept-group stock-value ${cls}">${fixedReportCell(used)}</td>`;
             }).join('');
-            return `<tr><td class="sticky-item"><div class="stock-item"><span class="stock-code">${it.itemCode}</span><b>${it.itemName}</b></div></td>${cells}<td class="dept-group total-col stock-value stock-positive">${fixedReportCell(kgTotal)}</td><td class="dept-end total-col stock-value stock-positive">${fixedReportCell(ltrTotal)}</td></tr>`;
+            return `<tr><td class="sticky-item"><div class="stock-item"><span class="stock-code">${it.itemCode}</span><b>${it.itemName}</b></div></td>${cells}</tr>`;
           }).join('');
 
           return `<div class="stock-report-area">
-      <div class="report-summary-row"><div><b>Scrap Stock Report</b><small class="stock-filter-note">Search and filter by the item's base-unit scrap stock.</small></div><span class="report-pill">KG / LTR</span></div>
+      <div class="report-summary-row"><div><b>Scrap Stock Report</b><small class="stock-filter-note">Search and filter by KG scrap stock.</small></div><span class="report-pill">KG</span></div>
       ${stockFilterControls('scrap', scrapStockSearch, scrapStockMin, scrapStockMax)}
-      <div class="tbl-wrap stock-matrix-wrap">
-        <table class="dt stock-report-table premium-stock-table">
-          <thead>
-            <tr><th class="sticky-item" rowspan="2">Item</th>${FIXED_SCRAP_DEPARTMENTS.map(([, label, cls]) => `<th colspan="2" class="dept-group ${cls}">${label}</th>`).join('')}<th colspan="2" class="dept-group total-col stock-total-head">Total</th></tr>
-            <tr>${FIXED_SCRAP_DEPARTMENTS.map(([, , cls]) => `<th class="dept-group unit-head ${cls}">KG</th><th class="dept-end unit-head ${cls}">LTR</th>`).join('')}<th class="dept-group total-col unit-head stock-total-head">KG</th><th class="dept-end total-col unit-head stock-total-head">LTR</th></tr>
-          </thead>
-          <tbody>${body || `<tr><td colspan="9">${emptyState('No scrap stock items found', 'Try a different item search or stock range.')}</td></tr>`}</tbody>
-        </table>
-      </div>
+      <div class="tbl-wrap stock-matrix-wrap"><table class="dt stock-report-table premium-stock-table">
+        <thead>
+          <tr><th class="sticky-item" rowspan="2">Item</th>${FIXED_SCRAP_DEPARTMENTS.map(([, label, cls]) => `<th colspan="2" class="dept-group ${cls}">${label}</th>`).join('')}</tr>
+          <tr>${FIXED_SCRAP_DEPARTMENTS.map(([, , cls]) => `<th class="dept-group unit-head ${cls}">Stock (KG)</th><th class="dept-group unit-head ${cls}">Used (KG)</th>`).join('')}</tr>
+        </thead>
+        <tbody>${body || `<tr><td colspan="7">${emptyState('No scrap stock items found', 'Try a different item search or stock range.')}</td></tr>`}</tbody>
+      </table></div>
     </div>`;
         }
 
@@ -12434,6 +12891,642 @@
           openModal('modal-prod-view');
         };
       })();
+
+
+    /* ================================================================
+       FINAL REQUESTED PATCH — Vendors / Customers / Users
+       1. Remove Vendor Code + GSTIN from Vendor UI.
+       2. Remove Customer Code + GSTIN from Customer UI.
+       3. Add multiple Sub Customers under each Customer.
+       4. Users use Email as the username; remove Username, Full name,
+          Address and add an Admin-controlled work-entry validity window.
+       ================================================================ */
+    (function applyVendorCustomerUserPatch() {
+      /* ---------- Vendor: simplified master ---------- */
+      PAGE_RENDERERS['vendors'] = function () {
+        return `<div class="page-head">
+          <div><div class="page-title"><span class="title-accent"></span>Vendors</div>${breadcrumb('Vendors')}</div>
+          <button class="btn btn-primary" onclick="openVendorModal(null)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg> New vendor</button>
+        </div>
+        <div class="card">
+          <div class="toolbar"><div class="toolbar-left"><div class="search-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input class="input" placeholder="Search vendors…" oninput="vendorsSearch=this.value;TABLE_PAGES.vendors=1;renderVendorsTable();"/></div></div></div>
+          <div class="tbl-wrap" id="vendors-table-wrap"></div><div class="pager" id="vendors-pager"></div>
+        </div>
+        <div class="modal-overlay" id="modal-vendor"><div class="modal modal-lg">
+          <div class="modal-head"><h3 id="vendor-modal-title">New vendor</h3><p>Add a supplier you receive raw material from.</p></div>
+          <div class="modal-body"><div class="form-grid">
+            <div class="field span-2"><label class="field-label">Vendor name</label><input class="input" id="v-name" placeholder="e.g. Shree Chemicals Pvt. Ltd." /></div>
+            <div class="field"><label class="field-label">Contact no.</label><input class="input" id="v-contact" placeholder="e.g. 9876543210" /></div>
+            <div class="field"><label class="field-label">Email</label><input class="input" id="v-email" type="email" placeholder="e.g. sales@shreechemicals.com" /></div>
+            <div class="field span-2"><label class="field-label">Address</label><textarea class="textarea" id="v-address" placeholder="e.g. Plot No. 25, GIDC Industrial Estate, Vatva, Ahmedabad"></textarea></div>
+            <div class="field span-2"><label class="field-label">Status</label><div class="seg" id="v-status-seg"><div class="seg-opt active" data-v="Active" onclick="segSelect('v-status-seg', this)">Active</div><div class="seg-opt" data-v="Inactive" onclick="segSelect('v-status-seg', this)">Inactive</div></div></div>
+          </div></div>
+          <div class="modal-foot"><button class="btn btn-outline" onclick="closeModal('modal-vendor')">Cancel</button><button class="btn btn-primary" id="vendor-save-btn" onclick="submitVendor()">Save</button></div>
+        </div></div>`;
+      };
+
+      window.renderVendorsTable = function () {
+        const wrap = document.getElementById('vendors-table-wrap'), pager = document.getElementById('vendors-pager'); if (!wrap) return;
+        const q = vendorsSearch.trim().toLowerCase();
+        let rows = DB.vendors.filter(v => !q || [v.name, v.contact, v.email, v.address].some(x => String(x || '').toLowerCase().includes(q)));
+        if (!rows.length) { wrap.innerHTML = emptyState('No vendors found', 'Try a different search, or add a new vendor.'); if (pager) pager.innerHTML = ''; return; }
+        const pageRows = paginateRows(rows, 'vendors');
+        wrap.innerHTML = `<table class="dt"><thead><tr><th>Vendor Name</th><th>Contact no.</th><th>Email</th><th>Address</th><th>Status</th><th style="text-align:right">Actions</th></tr></thead><tbody>${pageRows.map(v => `<tr><td class="cell-strong">${v.name}</td><td>${v.contact || '—'}</td><td>${v.email || '—'}</td><td>${v.address || v.city || '—'}</td><td><span class="badge ${v.status === 'Active' ? 'badge-active' : 'badge-inactive'}">${v.status || 'Active'}</span></td><td class="row-actions">${iconAction(ICON_EDIT, 'Edit', 'openVendorModal(' + v.id + ')')}</td></tr>`).join('')}</tbody></table>`;
+        if (pager) pager.innerHTML = pagerHtml(rows.length, 'vendors', 'renderVendorsTable');
+      };
+
+      window.openVendorModal = function (id) {
+        vendorEditId = id; const v = id ? DB.vendors.find(x => x.id === id) : null;
+        document.getElementById('vendor-modal-title').textContent = v ? 'Update vendor' : 'New vendor';
+        document.getElementById('vendor-save-btn').textContent = v ? 'Update' : 'Save';
+        document.getElementById('v-name').value = v ? v.name : '';
+        document.getElementById('v-contact').value = v ? v.contact : '';
+        document.getElementById('v-email').value = v ? v.email : '';
+        document.getElementById('v-address').value = v ? v.address : '';
+        segSetActive('v-status-seg', v ? v.status : 'Active');
+        openModal('modal-vendor');
+      };
+
+      window.submitVendor = function () {
+        const name = document.getElementById('v-name').value.trim();
+        const contact = document.getElementById('v-contact').value.trim();
+        const email = document.getElementById('v-email').value.trim();
+        const address = document.getElementById('v-address').value.trim();
+        const status = segGetValue('v-status-seg');
+        if (!name || !contact || !email || !address) { toast('Fill all vendor fields', 'error'); return; }
+        if (vendorEditId) Object.assign(DB.vendors.find(x => x.id === vendorEditId), { name, contact, email, address, status });
+        else DB.vendors.unshift({ id: Math.max(0, ...DB.vendors.map(v => v.id)) + 1, name, contact, email, address, city: 'Ahmedabad', status });
+        closeModal('modal-vendor'); renderVendorsTable(); toast(vendorEditId ? 'Vendor updated' : 'Vendor created');
+      };
+
+      /* ---------- Customers + Sub Customers ---------- */
+      if (!Array.isArray(DB.subCustomers)) DB.subCustomers = [];
+      DB.customers.forEach(c => { if (!Array.isArray(c.subCustomers)) c.subCustomers = []; });
+
+      /* Demo sub customers for Store dispatch selection. Real sub customers, when
+         present, are kept untouched; these are only used for the demo dataset. */
+      if (!DB.subCustomers.length) {
+        DB.subCustomers.push(
+          { id: 101, customerId: 1, name: 'Sunrise Agro - Ankleshwar Plant', contact: '9825012346', email: 'ankleshwar@sunriseagro.com', address: 'GIDC Estate, Ankleshwar, Bharuch, Gujarat', status: 'Active' },
+          { id: 102, customerId: 1, name: 'Sunrise Agro - Ahmedabad Office', contact: '9825012347', email: 'ahmedabad@sunriseagro.com', address: 'SG Highway, Ahmedabad, Gujarat', status: 'Active' },
+          { id: 103, customerId: 2, name: 'Prime Detergents - Rajkot Plant', contact: '9876541112', email: 'rajkot@primedetergents.com', address: 'Industrial Estate, Rajkot, Gujarat', status: 'Active' },
+          { id: 104, customerId: 2, name: 'Prime Detergents - Vadodara Depot', contact: '9876541113', email: 'vadodara@primedetergents.com', address: 'GIDC Estate, Vadodara, Gujarat', status: 'Active' }
+        );
+        DB.customers.forEach(c => {
+          c.subCustomers = DB.subCustomers.filter(sc => Number(sc.customerId) === Number(c.id)).map(sc => sc.id);
+        });
+      }
+
+      let customerEditId = null;
+      let customerPendingSubCustomers = [];
+      let customerSubCustomerEditId = null;
+
+      function nextSubCustomerId() {
+        return Math.max(0, ...DB.subCustomers.map(x => Number(x.id) || 0), ...customerPendingSubCustomers.map(x => Number(x.id) || 0)) + 1;
+      }
+
+      function customerSubCustomersForForm() {
+        return Array.isArray(customerPendingSubCustomers) ? customerPendingSubCustomers : [];
+      }
+
+      function renderCustomerSubCustomers() {
+        const wrap = document.getElementById('customer-subcustomers-list');
+        const editor = document.getElementById('customer-subcustomer-editor');
+        if (!wrap) return;
+
+        const rows = customerSubCustomersForForm();
+        const countEl = document.getElementById('customer-subcustomer-count');
+        if (countEl) countEl.textContent = rows.length;
+        if (!rows.length) {
+          wrap.innerHTML = `<div class="sub-customer-empty">No sub customers added yet.</div>`;
+        } else {
+          wrap.innerHTML = rows.map(sc => {
+            const initials = String(sc.name || 'SC').trim().split(/\s+/).slice(0, 2).map(x => x[0]).join('').toUpperCase();
+            return `<div class="sub-customer-row">
+              <div class="sub-customer-info">
+                <div class="sub-customer-title-row">
+                  <div class="sub-customer-avatar">${initials || 'SC'}</div>
+                  <div class="sub-customer-name" title="${sc.name || ''}">${sc.name || '—'}</div>
+                  <span class="badge ${sc.status === 'Active' ? 'badge-active' : 'badge-inactive'}">${sc.status || 'Active'}</span>
+                </div>
+                <div class="sub-customer-meta">
+                  <span class="sub-customer-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.8 19.8 0 0 1 3.1 5.18 2 2 0 0 1 5.11 3h3a2 2 0 0 1 2 1.72c.12.9.33 1.77.62 2.61a2 2 0 0 1-.45 2.11L9 10.71a16 16 0 0 0 4.29 4.29l1.27-1.27a2 2 0 0 1 2.11-.45c.84.29 1.71.5 2.61.62A2 2 0 0 1 22 16.92z"/></svg>${sc.contact || '—'}</span>
+                  <span class="sub-customer-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>${sc.email || '—'}</span>
+                </div>
+                <div class="sub-customer-address" title="${sc.address || ''}">${sc.address || '—'}</div>
+              </div>
+              <div class="sub-customer-actions">
+                <button class="btn btn-outline btn-sm" type="button" onclick="editCustomerSubCustomer('${String(sc.id)}')">Edit</button>
+              </div>
+            </div>`;
+          }).join('');
+        }
+
+        if (editor && customerSubCustomerEditId === null) editor.style.display = 'none';
+      }
+
+      function resetCustomerSubCustomerEditor() {
+        customerSubCustomerEditId = null;
+        const title = document.getElementById('customer-subcustomer-editor-title');
+        const save = document.getElementById('customer-subcustomer-save-btn');
+        if (title) title.textContent = 'Add sub customer';
+        if (save) save.textContent = 'Add sub customer';
+        ['sc-name', 'sc-contact', 'sc-email', 'sc-address'].forEach(id => {
+          const el = document.getElementById(id); if (el) el.value = '';
+        });
+        segSetActive('sc-status-seg', 'Active');
+        const editor = document.getElementById('customer-subcustomer-editor');
+        if (editor) editor.style.display = 'none';
+      }
+
+      window.openCustomerSubCustomerEditor = function () {
+        customerSubCustomerEditId = null;
+        document.getElementById('customer-subcustomer-editor-title').textContent = 'Add sub customer';
+        document.getElementById('customer-subcustomer-save-btn').textContent = 'Add sub customer';
+        document.getElementById('sc-name').value = '';
+        document.getElementById('sc-contact').value = '';
+        document.getElementById('sc-email').value = '';
+        document.getElementById('sc-address').value = '';
+        segSetActive('sc-status-seg', 'Active');
+        document.getElementById('customer-subcustomer-editor').style.display = 'block';
+        document.getElementById('sc-name').focus();
+      };
+
+      window.editCustomerSubCustomer = function (subId) {
+        const sc = customerPendingSubCustomers.find(x => String(x.id) === String(subId));
+        if (!sc) return;
+        customerSubCustomerEditId = sc.id;
+        document.getElementById('customer-subcustomer-editor-title').textContent = 'Update sub customer';
+        document.getElementById('customer-subcustomer-save-btn').textContent = 'Update';
+        document.getElementById('sc-name').value = sc.name || '';
+        document.getElementById('sc-contact').value = sc.contact || '';
+        document.getElementById('sc-email').value = sc.email || '';
+        document.getElementById('sc-address').value = sc.address || '';
+        segSetActive('sc-status-seg', sc.status || 'Active');
+        document.getElementById('customer-subcustomer-editor').style.display = 'block';
+        document.getElementById('sc-name').focus();
+      };
+
+      window.saveCustomerSubCustomer = function () {
+        const name = document.getElementById('sc-name').value.trim();
+        const contact = document.getElementById('sc-contact').value.trim();
+        const email = document.getElementById('sc-email').value.trim();
+        const address = document.getElementById('sc-address').value.trim();
+        const status = segGetValue('sc-status-seg');
+        if (!name || !contact || !email || !address) { toast('Fill all sub customer fields', 'error'); return; }
+
+        if (customerSubCustomerEditId !== null) {
+          const sc = customerPendingSubCustomers.find(x => String(x.id) === String(customerSubCustomerEditId));
+          if (sc) Object.assign(sc, { name, contact, email, address, status });
+          toast('Sub customer updated');
+        } else {
+          customerPendingSubCustomers.unshift({ id: 'new-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7), customerId: customerEditId ? Number(customerEditId) : null, name, contact, email, address, status });
+          toast('Sub customer added');
+        }
+
+        resetCustomerSubCustomerEditor();
+        renderCustomerSubCustomers();
+      };
+
+      PAGE_RENDERERS['customers'] = function () {
+        return `<div class="page-head">
+          <div><div class="page-title"><span class="title-accent"></span>Customers</div>${breadcrumb('Customers')}</div>
+          <button class="btn btn-primary" onclick="openCustomerModal(null)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg> New customer</button>
+        </div>
+        <div class="card">
+          <div class="toolbar"><div class="toolbar-left"><div class="search-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input class="input" placeholder="Search customers…" oninput="customersSearch=this.value;TABLE_PAGES.customers=1;renderCustomersTable();"/></div></div></div>
+          <div class="tbl-wrap" id="customers-table-wrap"></div><div class="pager" id="customers-pager"></div>
+        </div>
+        <div class="modal-overlay" id="modal-customer"><div class="modal modal-lg">
+          <div class="modal-head"><h3 id="customer-modal-title">New customer</h3><p>Add a buyer you dispatch finished goods to.</p></div>
+          <div class="modal-body"><div class="form-grid">
+            <div class="field span-2"><label class="field-label">Customer name</label><input class="input" id="c-name" placeholder="e.g. PGP Glass Pvt. Ltd." /></div>
+            <div class="field"><label class="field-label">Contact no.</label><input class="input" id="c-contact" placeholder="e.g. 9876543210" /></div>
+            <div class="field"><label class="field-label">Email</label><input class="input" id="c-email" type="email" placeholder="e.g. sales@pgpglass.com" /></div>
+            <div class="field span-2"><label class="field-label">Address</label><textarea class="textarea" id="c-address" placeholder="e.g. Plot No. 25, GIDC Industrial Estate, Vatva, Ahmedabad"></textarea></div>
+            <div class="field span-2"><label class="field-label">Status</label><div class="seg" id="c-status-seg"><div class="seg-opt active" data-v="Active" onclick="segSelect('c-status-seg', this)">Active</div><div class="seg-opt" data-v="Inactive" onclick="segSelect('c-status-seg', this)">Inactive</div></div></div>
+
+            <div class="field span-2 customer-subcustomers-section">
+              <div class="customer-subcustomers-head">
+                <div class="customer-subcustomers-title">
+                  <div class="customer-subcustomers-title-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg></div>
+                  <div><label class="field-label">Sub customers <span class="sub-customer-count" id="customer-subcustomer-count">0</span></label><div class="field-hint">Add plants, offices or other locations linked to this customer.</div></div>
+                </div>
+                <button class="btn btn-primary btn-sm" type="button" onclick="openCustomerSubCustomerEditor()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg> Add sub customer</button>
+              </div>
+              <div id="customer-subcustomers-list"></div>
+              <div id="customer-subcustomer-editor" class="sub-customer-editor" style="display:none;">
+                <div class="sub-customer-editor-head">
+                  <div class="sub-customer-editor-title"><strong id="customer-subcustomer-editor-title">Add sub customer</strong><span>Add the contact details and location for this customer.</span></div>
+                  <button class="btn btn-ghost btn-icon-sm" type="button" onclick="resetCustomerSubCustomerEditor()" title="Close" aria-label="Close">×</button>
+                </div>
+                <div class="form-grid">
+                  <div class="field span-2"><label class="field-label">Sub customer name</label><input class="input" id="sc-name" placeholder="e.g. PGP Glass - Ahmedabad Plant" /></div>
+                  <div class="field"><label class="field-label">Contact no.</label><input class="input" id="sc-contact" placeholder="e.g. 9876543210" /></div>
+                  <div class="field"><label class="field-label">Email</label><input class="input" id="sc-email" type="email" placeholder="e.g. plant@pgpglass.com" /></div>
+                  <div class="field span-2"><label class="field-label">Address</label><textarea class="textarea" id="sc-address" placeholder="Sub customer address"></textarea></div>
+                  <div class="field span-2"><label class="field-label">Status</label><div class="seg" id="sc-status-seg"><div class="seg-opt active" data-v="Active" onclick="segSelect('sc-status-seg', this)">Active</div><div class="seg-opt" data-v="Inactive" onclick="segSelect('sc-status-seg', this)">Inactive</div></div></div>
+                </div>
+                <div class="sub-customer-editor-actions"><button class="btn btn-outline btn-sm" type="button" onclick="resetCustomerSubCustomerEditor()">Cancel</button><button class="btn btn-primary btn-sm" type="button" id="customer-subcustomer-save-btn" onclick="saveCustomerSubCustomer()">Add sub customer</button></div>
+              </div>
+            </div>
+          </div></div>
+          <div class="modal-foot"><button class="btn btn-outline" onclick="closeModal('modal-customer')">Cancel</button><button class="btn btn-primary" id="customer-save-btn" onclick="submitCustomer()">Save</button></div>
+        </div></div>`;
+      };
+
+      window.renderCustomersTable = function () {
+        const wrap = document.getElementById('customers-table-wrap'), pager = document.getElementById('customers-pager'); if (!wrap) return;
+        const q = customersSearch.trim().toLowerCase();
+        let rows = DB.customers.filter(c => !q || [c.name, c.contact, c.email, c.address].some(x => String(x || '').toLowerCase().includes(q)));
+        if (!rows.length) { wrap.innerHTML = emptyState('No customers found', 'Try a different search, or add a new customer.'); if (pager) pager.innerHTML = ''; return; }
+        const pageRows = paginateRows(rows, 'customers');
+        wrap.innerHTML = `<table class="dt"><thead><tr><th>Customer Name</th><th>Contact no.</th><th>Email</th><th>Address</th><th>Sub Customers</th><th>Status</th><th style="text-align:right">Actions</th></tr></thead><tbody>${pageRows.map(c => {
+          const count = DB.subCustomers.filter(sc => Number(sc.customerId) === Number(c.id)).length;
+          return `<tr><td class="cell-strong">${c.name}</td><td>${c.contact || '—'}</td><td>${c.email || '—'}</td><td>${c.address || c.city || '—'}</td><td><span class="pill">${count}</span></td><td><span class="badge ${c.status === 'Active' ? 'badge-active' : 'badge-inactive'}">${c.status || 'Active'}</span></td><td class="row-actions">${iconAction(ICON_EDIT, 'Edit', 'openCustomerModal(' + c.id + ')')}</td></tr>`;
+        }).join('')}</tbody></table>`;
+        if (pager) pager.innerHTML = pagerHtml(rows.length, 'customers', 'renderCustomersTable');
+      };
+
+      window.openCustomerModal = function (id) {
+        customerEditId = id ? Number(id) : null;
+        const c = customerEditId ? DB.customers.find(x => Number(x.id) === customerEditId) : null;
+        document.getElementById('customer-modal-title').textContent = c ? 'Update customer' : 'New customer';
+        document.getElementById('customer-save-btn').textContent = c ? 'Update' : 'Save';
+        document.getElementById('c-name').value = c ? c.name : '';
+        document.getElementById('c-contact').value = c ? c.contact : '';
+        document.getElementById('c-email').value = c ? c.email : '';
+        document.getElementById('c-address').value = c ? c.address : '';
+        segSetActive('c-status-seg', c ? c.status : 'Active');
+
+        customerPendingSubCustomers = c
+          ? DB.subCustomers.filter(sc => Number(sc.customerId) === Number(c.id)).map(sc => ({ ...sc }))
+          : [];
+        resetCustomerSubCustomerEditor();
+        renderCustomerSubCustomers();
+        openModal('modal-customer');
+      };
+
+      window.submitCustomer = function () {
+        const name = document.getElementById('c-name').value.trim();
+        const contact = document.getElementById('c-contact').value.trim();
+        const email = document.getElementById('c-email').value.trim();
+        const address = document.getElementById('c-address').value.trim();
+        const status = segGetValue('c-status-seg');
+        if (!name || !contact || !email || !address) { toast('Fill all customer fields', 'error'); return; }
+
+        let customer;
+        if (customerEditId) {
+          customer = DB.customers.find(x => Number(x.id) === Number(customerEditId));
+          if (!customer) return;
+          Object.assign(customer, { name, contact, email, address, status });
+        } else {
+          customer = { id: Math.max(0, ...DB.customers.map(c => Number(c.id) || 0)) + 1, name, contact, email, address, city: 'Ahmedabad', status, subCustomers: [] };
+          DB.customers.unshift(customer);
+        }
+
+        const parentId = Number(customer.id);
+        const oldIds = new Set(DB.subCustomers.filter(sc => Number(sc.customerId) === parentId).map(sc => sc.id));
+        DB.subCustomers = DB.subCustomers.filter(sc => Number(sc.customerId) !== parentId);
+        const committedSubs = customerPendingSubCustomers.map(sc => {
+          const id = (typeof sc.id === 'string' && sc.id.startsWith('new-')) ? nextSubCustomerId() : sc.id;
+          return { ...sc, id, customerId: parentId };
+        });
+        DB.subCustomers.push(...committedSubs);
+        customer.subCustomers = committedSubs.map(sc => sc.id);
+
+        closeModal('modal-customer');
+        renderCustomersTable();
+        toast(customerEditId ? 'Customer updated' : 'Customer created');
+        customerPendingSubCustomers = [];
+        customerSubCustomerEditId = null;
+      };
+
+      /* ---------- User work-entry window ---------- */
+      DB.users.forEach(u => {
+        u.email = u.email || '';
+        u.contact = u.contact || '';
+        u.roles = u.roles || [u.role];
+        if (!Number.isFinite(Number(u.workEntryDays)) || Number(u.workEntryDays) <= 0) u.workEntryDays = 7;
+        if (!u.workWindowStartDate) u.workWindowStartDate = todayIso();
+      });
+
+      function currentLoggedInUserRecord() {
+        if (!DB.currentUser) return null;
+        const role = DB.currentUser.role;
+        return DB.users.find(u => u.role === role) || DB.users.find(u => (u.roles || []).includes(role)) || null;
+      }
+
+      window.workEntryStatus = function (user) {
+        if (!user) return { allowed: true, remaining: 0, expiry: null };
+        if (String(user.role || '') === 'Admin' || (user.roles || []).includes('Admin')) return { allowed: true, remaining: Infinity, expiry: null };
+        const days = Math.max(1, Number(user.workEntryDays) || 7);
+        const start = new Date((user.workWindowStartDate || todayIso()) + 'T00:00:00');
+        const now = new Date();
+        const elapsed = Math.floor((now - start) / 86400000);
+        const expiryDate = new Date(start); expiryDate.setDate(expiryDate.getDate() + days);
+        return { allowed: elapsed < days, remaining: Math.max(0, days - elapsed), expiry: expiryDate.toISOString().slice(0, 10), days, elapsed };
+      };
+
+      window.canPerformWorkEntry = function () {
+        const user = currentLoggedInUserRecord();
+        if (!user) return true;
+        const state = workEntryStatus(user);
+        if (!state.allowed) {
+          toast('Work entry window expired. Admin must increase the allowed days before you can continue.', 'error', 4200);
+          return false;
+        }
+        return true;
+      };
+
+      function workWindowLabel(u) {
+        const s = workEntryStatus(u);
+        if (s.remaining === Infinity) return '<span class="badge badge-approved">Unlimited</span>';
+        return s.allowed
+          ? `<span class="work-window-ok">${s.remaining} day${s.remaining === 1 ? '' : 's'}</span>`
+          : `<span class="work-window-expired">0 days</span>`;
+      }
+
+      PAGE_RENDERERS['users'] = function () {
+        return `<div class="page-head">
+          <div><div class="page-title"><span class="title-accent"></span>Users</div>${breadcrumb('Users')}</div>
+          <button class="btn btn-primary" onclick="openUserModal(null)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg> New user</button>
+        </div>
+        <div class="card">
+          <div class="toolbar"><div class="toolbar-left"><div class="search-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input class="input" placeholder="Search users…" oninput="usersSearch=this.value;TABLE_PAGES.users=1;renderUsersTable();" /></div></div></div>
+          <div class="tbl-wrap" id="users-table-wrap"></div><div class="pager" id="users-pager"></div>
+        </div>
+        <div class="modal-overlay" id="modal-user"><div class="modal modal-lg">
+          <div class="modal-head"><h3 id="user-modal-title">New user</h3><p>Email is used as the user's login name. Configure the work-entry window for this user.</p></div>
+          <div class="modal-body"><div class="form-grid">
+            <div class="field span-2"><label class="field-label">Email</label><input class="input" id="u-email" type="email" placeholder="e.g. rohan@company.com" /></div>
+            <div class="field"><label class="field-label">Contact no.</label><input class="input" id="u-contact" placeholder="e.g. 9876543210" /></div>
+            <div class="field"><label class="field-label">Work entry validity (days)</label><input class="input" id="u-work-days" type="number" min="1" max="3650" step="1" value="7" /></div>
+            <div class="field span-2"><label class="field-label">Password</label><input class="input" type="password" id="u-password" placeholder="Enter a password" /></div>
+            <div class="field span-2"><label class="field-label">Roles</label><div class="role-grid" id="u-roles-grid">${USER_ROLE_OPTIONS.map(r => `<label class="role-option"><input type="checkbox" value="${r}" /><span>${r}</span></label>`).join('')}</div></div>
+            <div class="field span-2"><label class="field-label">Status</label><div class="seg" id="u-status-seg"><div class="seg-opt active" data-v="Active" onclick="segSelect('u-status-seg', this)">Active</div><div class="seg-opt" data-v="Inactive" onclick="segSelect('u-status-seg', this)">Inactive</div></div></div>
+          </div></div>
+          <div class="modal-foot"><button class="btn btn-outline" onclick="closeModal('modal-user')">Cancel</button><button class="btn btn-primary" id="user-save-btn" onclick="submitUser()">Save</button></div>
+        </div></div>`;
+      };
+
+      window.renderUsersTable = function () {
+        const wrap = document.getElementById('users-table-wrap'), pager = document.getElementById('users-pager'); if (!wrap) return;
+        const q = usersSearch.trim().toLowerCase();
+        let rows = DB.users.filter(u => !q || [u.email, u.contact, ...(u.roles || [])].some(v => String(v || '').toLowerCase().includes(q)));
+        if (!rows.length) { wrap.innerHTML = emptyState('No users found', 'Try a different search, or add a new user.'); if (pager) pager.innerHTML = ''; return; }
+        const pageRows = paginateRows(rows, 'users');
+        wrap.innerHTML = `<table class="dt"><thead><tr><th>Email / Username</th><th>Contact no.</th><th>Roles</th><th>Work Entry</th><th>Status</th><th style="text-align:right">Actions</th></tr></thead><tbody>${pageRows.map(u => `<tr><td class="cell-strong">${u.email || '—'}</td><td>${u.contact || '—'}</td><td>${(u.roles || [u.role]).map(r => `<span class="pill">${r}</span>`).join(' ')}</td><td>${workWindowLabel(u)}</td><td><span class="badge ${u.status === 'Active' ? 'badge-active' : 'badge-inactive'}">${u.status || 'Active'}</span></td><td class="row-actions">${iconAction(ICON_EDIT, 'Edit', 'openUserModal(' + u.id + ')')}</td></tr>`).join('')}</tbody></table>`;
+        if (pager) pager.innerHTML = pagerHtml(rows.length, 'users', 'renderUsersTable');
+      };
+
+      window.openUserModal = function (id) {
+        userEditId = id; const u = id ? DB.users.find(x => x.id === id) : null;
+        document.getElementById('user-modal-title').textContent = u ? 'Update user' : 'New user';
+        document.getElementById('user-save-btn').textContent = u ? 'Update' : 'Save';
+        document.getElementById('u-email').value = u ? u.email : '';
+        document.getElementById('u-contact').value = u ? u.contact : '';
+        document.getElementById('u-work-days').value = u ? (Number(u.workEntryDays) || 7) : 7;
+        document.getElementById('u-password').value = '';
+        document.querySelectorAll('#u-roles-grid input').forEach(cb => cb.checked = !!u && (u.roles || []).includes(cb.value));
+        segSetActive('u-status-seg', u ? u.status : 'Active');
+        openModal('modal-user');
+      };
+
+      window.submitUser = function () {
+        const email = document.getElementById('u-email').value.trim().toLowerCase();
+        const contact = document.getElementById('u-contact').value.trim();
+        const password = document.getElementById('u-password').value;
+        const workEntryDays = Math.max(1, Number(document.getElementById('u-work-days').value) || 7);
+        const roles = [...document.querySelectorAll('#u-roles-grid input:checked')].map(x => x.value);
+        const status = segGetValue('u-status-seg');
+        if (!email || !contact || (!password && !userEditId) || !roles.length) { toast('Fill all required user fields and select at least one role', 'error'); return; }
+        const duplicate = DB.users.find(u => String(u.email || '').toLowerCase() === email && Number(u.id) !== Number(userEditId));
+        if (duplicate) { toast('A user with this email already exists', 'error'); return; }
+        if (userEditId) {
+          const user = DB.users.find(x => x.id === userEditId);
+          Object.assign(user, { email, contact, roles, role: roles[0], status, workEntryDays });
+          if (!user.workWindowStartDate) user.workWindowStartDate = todayIso();
+          toast('User updated');
+        } else {
+          DB.users.unshift({ id: Math.max(0, ...DB.users.map(x => x.id)) + 1, email, contact, password, roles, role: roles[0], status, workEntryDays, workWindowStartDate: todayIso(), lastLogin: '—' });
+          toast('User created');
+        }
+        closeModal('modal-user'); renderUsersTable();
+      };
+
+      /* ---------- Enforce the window on work actions ---------- */
+      const wrapWorkAction = (name, original) => {
+        if (typeof original !== 'function') return;
+        window[name] = function (...args) {
+          if (!canPerformWorkEntry()) return;
+          return original.apply(this, args);
+        };
+      };
+
+      /* Keep the original functions available while wrapping the final window bindings. */
+      wrapWorkAction('openProdStart', window.openProdStart);
+      wrapWorkAction('openProdClose', window.openProdClose);
+      wrapWorkAction('openQcStart', window.openQcStart);
+      wrapWorkAction('openQcClose', window.openQcClose);
+      wrapWorkAction('openPkgTake', window.openPkgTake);
+      wrapWorkAction('openPackagingEntry', window.openPackagingEntry);
+      wrapWorkAction('openPkgStart', window.openPkgStart);
+      wrapWorkAction('openPkgClose', window.openPkgClose);
+      wrapWorkAction('openStoreDispatchModal', window.openStoreDispatchModal);
+      wrapWorkAction('openDispatchReturnModal', window.openDispatchReturnModal);
+      wrapWorkAction('advanceInward', window.advanceInward);
+
+      /* User form/table styles. */
+      const style = document.createElement('style');
+      style.textContent = `
+        .work-window-ok { display:inline-flex; align-items:center; gap:5px; color:var(--pass); font-weight:700; font-size:12px; }
+        .work-window-expired { display:inline-flex; align-items:center; gap:5px; color:var(--reject); font-weight:800; font-size:12px; }
+        /* Sub customer section — compact, scannable cards instead of dense rows. */
+        .customer-subcustomers-section {
+          margin-top: 4px;
+          padding: 18px;
+          border: 1px solid var(--border);
+          border-radius: var(--radius-xl);
+          background: #fafbfc;
+          grid-column: 1 / -1;
+        }
+        .customer-subcustomers-head {
+          display:flex;
+          align-items:center;
+          justify-content:space-between;
+          gap:16px;
+          margin-bottom:14px;
+          padding-bottom:14px;
+          border-bottom:1px solid var(--border);
+        }
+        .customer-subcustomers-title {
+          display:flex;
+          align-items:center;
+          gap:10px;
+        }
+        .customer-subcustomers-title-icon {
+          width:32px;
+          height:32px;
+          border-radius:var(--radius-md);
+          display:grid;
+          place-items:center;
+          background:rgba(211,91,25,.10);
+          color:var(--primary);
+          flex-shrink:0;
+        }
+        .customer-subcustomers-title-icon svg { width:17px; height:17px; }
+        .customer-subcustomers-head .field-label { margin-bottom:1px; font-size:13px; }
+        .customer-subcustomers-head .field-hint { margin-top:1px; }
+        .sub-customer-count {
+          display:inline-flex;
+          align-items:center;
+          justify-content:center;
+          min-width:22px;
+          height:22px;
+          padding:0 7px;
+          margin-left:6px;
+          border-radius:999px;
+          background:var(--secondary);
+          color:var(--secondary-foreground);
+          font-size:11px;
+          font-weight:700;
+          vertical-align:middle;
+        }
+        .sub-customer-empty {
+          padding:18px;
+          border:1px dashed #cfd3d8;
+          border-radius:var(--radius-lg);
+          color:var(--muted-foreground);
+          font-size:12.5px;
+          background:var(--card);
+          text-align:center;
+        }
+        .sub-customer-empty::before {
+          content:'+';
+          display:grid;
+          place-items:center;
+          width:30px;
+          height:30px;
+          margin:0 auto 7px;
+          border-radius:50%;
+          background:var(--muted);
+          color:var(--primary);
+          font-size:18px;
+          font-weight:500;
+        }
+        .sub-customer-row {
+          display:grid;
+          grid-template-columns:minmax(0,1fr) auto;
+          align-items:center;
+          gap:18px;
+          padding:15px 16px;
+          border:1px solid var(--border);
+          border-radius:var(--radius-lg);
+          background:var(--card);
+          margin-top:10px;
+          box-shadow:var(--shadow-xs);
+          transition:border-color .12s ease, box-shadow .12s ease, transform .12s ease;
+        }
+        .sub-customer-row:hover {
+          border-color:#cbd0d6;
+          box-shadow:var(--shadow-sm);
+          transform:translateY(-1px);
+        }
+        .sub-customer-info { min-width:0; }
+        .sub-customer-title-row {
+          display:flex;
+          align-items:center;
+          gap:9px;
+          min-width:0;
+        }
+        .sub-customer-avatar {
+          width:30px;
+          height:30px;
+          border-radius:var(--radius-md);
+          display:grid;
+          place-items:center;
+          flex-shrink:0;
+          background:var(--muted);
+          color:var(--foreground);
+          font-size:11px;
+          font-weight:800;
+        }
+        .sub-customer-name {
+          min-width:0;
+          overflow:hidden;
+          text-overflow:ellipsis;
+          white-space:nowrap;
+          font-weight:700;
+          font-size:13px;
+        }
+        .sub-customer-meta {
+          display:flex;
+          align-items:center;
+          flex-wrap:wrap;
+          gap:6px 12px;
+          margin:7px 0 0 39px;
+          color:var(--muted-foreground);
+          font-size:11.5px;
+        }
+        .sub-customer-meta-item { display:inline-flex; align-items:center; gap:5px; min-width:0; }
+        .sub-customer-meta-item svg { width:13px; height:13px; flex-shrink:0; }
+        .sub-customer-address {
+          margin:6px 0 0 39px;
+          color:var(--muted-foreground);
+          font-size:11.5px;
+          line-height:1.4;
+          white-space:nowrap;
+          overflow:hidden;
+          text-overflow:ellipsis;
+        }
+        .sub-customer-actions {
+          display:flex;
+          align-items:center;
+          gap:8px;
+          flex-shrink:0;
+        }
+        .sub-customer-actions .btn-sm { min-width:64px; }
+        .sub-customer-editor {
+          margin-top:14px;
+          padding:16px;
+          border:1px solid rgba(211,91,25,.28);
+          border-left:3px solid var(--primary);
+          border-radius:var(--radius-lg);
+          background:var(--card);
+          box-shadow:var(--shadow-xs);
+        }
+        .sub-customer-editor-head {
+          display:flex;
+          align-items:center;
+          justify-content:space-between;
+          gap:12px;
+          margin-bottom:14px;
+        }
+        .sub-customer-editor-title { display:flex; flex-direction:column; gap:2px; }
+        .sub-customer-editor-title strong { font-size:13.5px; }
+        .sub-customer-editor-title span { color:var(--muted-foreground); font-size:11.5px; }
+        .sub-customer-editor .form-grid { gap:14px; }
+        .sub-customer-editor .seg { width:150px; }
+        .sub-customer-editor .seg-opt { width:auto; flex:1; text-align:center; }
+        .sub-customer-editor-actions {
+          display:flex;
+          justify-content:flex-end;
+          gap:8px;
+          margin-top:14px;
+          padding-top:14px;
+          border-top:1px solid var(--border);
+        }
+        @media (max-width: 700px) {
+          .customer-subcustomers-section { padding:14px; }
+          .customer-subcustomers-head { align-items:flex-start; flex-direction:column; }
+          .sub-customer-row { grid-template-columns:1fr; gap:12px; }
+          .sub-customer-actions { justify-content:flex-end; }
+        }
+        #modal-user .field-hint { line-height:1.45; }
+      `;
+      document.head.appendChild(style);
+    })();
 
   </script>
 
